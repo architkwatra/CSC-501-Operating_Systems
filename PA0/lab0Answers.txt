@@ -1,0 +1,66 @@
+ANSWER 1)					
+				
+	 ___________ <-- Stack Start 0x0
+	|  Program  |
+	|   text    | 
+	|           |
+	|___________|<-- etext: 0x1931d
+	|           |
+	|    data   |
+	|           |
+	|___________|<-- edata: 0x1e53d
+	|   BSS     |
+	|  Segment  |
+	|           |
+	|___________|<-- ebss: 0x2ea58
+	|           |
+	|   HEAP    |
+	|           |
+	|___________|<-- Stack limit: 0xffdffc
+	|           |
+	|  STACK    | Stack length size: 4096
+	|           |
+	|           |<--Stack pointer: 0xffef80
+	|           |
+	|___________|<-- Stack base: 0xffeff8
+
+
+ANSWER 2)
+   	 _____________	
+  	|	      | <-- STACK TOP (Just after getting in printtos())	     	
+  	|   Local     |    			
+  	|  Variables  |    
+  	|    	      |
+  	|   	      |
+  	|_____________|
+  	|	      |
+ 	|   EBP       |-> STACK TOP (Just before getting in printtos())
+  	|_____________|   
+  	|   	      |
+  	|   RETURN    |
+	|   ADDRESS   |
+  	|_____________|  
+  	|	      |
+  	|  Function   |
+  	|  Parameters |	
+  	|_____________|	
+ 
+
+The difference between the stack top before and after entering the printtos function is 76 in decimal.
+When the printtos function in called from its parent functin (main in this case), the OS starts saving the important information onto tht stack. The information
+includes the parameters of the called function (printtos) in this case followed by the return address of the calling function i.e. main. The return address is used to 
+switch the control back to the main function function when the printtos function finishes executing. After this, the OS saves the base pointer to the stack as well which 
+gives a temporary base end for the current process in execution. After saving the base pointer, the OS starts saving the local valriables of the called function i.e. printtos()
+which can be accessed using the stack pointer. The stack pointer here denotes the top of the stack at any point of time.
+
+SRC: http://flint.cs.yale.edu/cs421/papers/x86-asm/asm.html
+
+Answer 3) 
+
+If we simply check the difference between the stack top before and after entering printtos() function, it gives a difference of 76 in decimal. However, I have only decalred 5 variables 
+(4 long and 1 int) which simply converts to 36 in decimal. Also, the memory locations directly above the EBP stores the local variables. This implies that the OS is storing some other
+values after pushing the local variables onto the satck. Therefore, printing the top 4 memory locations doesn't give the stored local variable's values.
+After disabling the compiler optimization, I still could not see the local variables. However, I can see that the difference changes from 76 to 40. This shows that 
+the compiler now is storing less number of varaibles but still the local variables could not be displayed since they are still stored on 4 memory locations above the EBP. 
+
+
