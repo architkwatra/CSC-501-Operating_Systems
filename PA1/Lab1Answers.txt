@@ -1,0 +1,83 @@
+1) What are the advantages and disadvantages of each of the two scheduling policies? 
+   Also, give the advantages and disadvantages of the round robin scheduling 
+   policy originally implemented in Xinu.
+
+1)
+
+Exponential Distribution Scheduler:
+	ADVANTAGES:-
+		
+		This scheduling algorithm is much more fair as compared to the default XINU scheduler since it schedules
+		the process based on a random number and any process could be selected (Although it is not 100% fair as
+		the ratio is not the same for selecting all the processes).
+
+		Since, the processes with lower priority have more chance of getting scheduled due to the exponential 
+		implementation, therefore, it gives some extra control on the scheduling which could be used in special
+		scenarios.
+
+		Starvation problem is solved since a random number is used to schedule a process.
+	
+	DISADVANTAGES:
+  		
+		When the number of processes increase, the processes with higher priorities will have a very low chance of
+		getting scheduled, which might be troublesome as it will not behave like a fair scheduler and starvation could 
+		occur (not exactly but to some extent).
+	
+		If a large value of lambda is chosen, then the graph will be even more right skewed. On the other hand, if the value
+		is very small, it will be right skewed. Therefore, choosing the lambda value is troublesome.
+
+Linux-like Scheduler (based loosely on the Linux kernel 2.2):
+	
+	ADVANTAGES:-
+		
+		This scheduling policy gives a fair chance to the processes in terms of priority.
+		
+		Even if a process goes to sleep, the process is still considered when it returns from the sleep state or is assigned a higher timequantum value
+		
+	DISADVANTAGES:
+		
+		For the lower priority processes, the average turnaround time might be too large.
+		
+		The scheduling might be slower due to calculations involved. Although the calculations could be done in micro seconds, but with such powerful 
+		processors nowadays, even a few microseconds matter
+
+Round Robin Scheduling Policy Originally Implemented in Xinu:
+	
+	ADVANTAGES:-
+		
+		This type of scheduling could be helpful in scenarios where a sequential scheduling needs to be done.
+		
+		Least amount of calculations and other conditional check are required, therefore, it is faster and simpler to implement.
+
+	DISADVANTAGES:-
+		
+		Starvation happens for the processes with a lower priority.		 
+
+
+2) Describe the way each of the schedulers affects the NULL process.
+
+	
+
+2)
+
+Exponential Distribution Scheduler: The NULL process gets scheduled when there is no other process in the ready queue.
+		
+
+Linux-like Scheduler (based loosely on the Linux kernel 2.2): The NULL process gets scheduled when there is no other process in the ready queue.
+	
+	
+
+Round Robin Scheduling Policy Originally Implemented in Xinu: The NULL process gets scheduled when there is no other process in the ready queue.
+
+
+
+
+
+
+
+
+
+
+
+
+
