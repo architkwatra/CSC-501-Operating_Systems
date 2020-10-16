@@ -10,8 +10,18 @@
  */
 SYSCALL init_frm()
 {
-  kprintf("To be implemented!\n");
-  return OK;
+	struct fr_map_t *ptr = (fr_map_t*)1024*4096;
+	struct fr_map_t frm_tab[NFRAMES];
+	int i = 0;
+	while (i < NFRAMES) {
+		frm_tab[i] = ptr;
+		++ptr;
+	}
+
+	//struct frm_map_t frm_tab = ptr;
+	//frm_tab[NFRAMES];
+
+	return OK;
 }
 
 /*-------------------------------------------------------------------------

@@ -58,6 +58,7 @@ typedef struct{
   int fr_refcnt;			/* reference count		*/
   int fr_type;				/* FR_DIR, FR_TBL, FR_PAGE	*/
   int fr_dirty;
+  struct pt_t entries[1024];
 }fr_map_t;
 
 extern bs_map_t bsm_tab[];

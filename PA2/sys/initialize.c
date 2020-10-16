@@ -136,6 +136,41 @@ sysinit()
 
 	
 
+	
+	// creating global page tables
+	// check the logic for pageNumber
+	
+	int i = 0;
+	int j = 0;
+	int pageNumber: 20;
+	globalPagePFN = 0;
+
+	while (i < 4) {
+		struct fr_map_t *frmPointer = &frm_tab[i];
+		//pageNumber += 1024;
+		while (j < 1024) {
+			struct pt_t *entryPointer = &(frmPointer->entries[j]);
+			entryPointer->pt_pres = 1;
+			entryPointer->pt_write = 1;
+			entryPointer->pt_base = globalPagePFN;
+			j++;
+			globalPagePFN++;
+		}
+
+		i++;
+	}
+	
+	while (i < 4096) {
+		*ptr->pt_pres = 1;
+		*ptr->pt_write = 1;
+		*ptr->pt_base = pageNumber;
+		++ptr;
+		if (i % 1023 == 0)
+			pageNumber += 1024;
+		i++;
+	}
+
+
 	numproc = 0;			/* initialize system variables */
 	nextproc = NPROC-1;
 	nextsem = NSEM-1;

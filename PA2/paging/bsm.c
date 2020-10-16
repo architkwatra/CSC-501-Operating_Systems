@@ -20,10 +20,14 @@ SYSCALL init_bsm()
  */
 SYSCALL get_bsm(int* avail)
 {
-	//int i = 0;
-	//while (i < 8) {
-	//	if (bsm_tab[i].) {}
-	//}
+	int i = 0;
+	while (i < 8) {
+		
+		if (bsm_tab[i].bs_status == 0) {
+			return (i);	
+		}
+	}
+	return -1;
 }
 
 

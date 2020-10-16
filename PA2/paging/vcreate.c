@@ -28,8 +28,36 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	long	args;			/* arguments (treated like an	*/
 					/* array in the code)		*/
 {
-	kprintf("To be implemented!\n");
+	STATWORD ps;
+
+	int pid = create(procaddr,ssize,priority,name,nargs,args);
+	disable(ps);
+	struct pentry *ptr = &proctab[pid];
+	//get_bsm will return a free entry from bsm_tab by checking its status
+	int freeStore = get_bsm(NULL);
+	if (freeStore != -1) {
+		//get_bs() returns any valid number if the freeStore(BS) has hsize (pages)
+		//available else it return a SYSERR
+		int backingStoreAllocation = get_bs(freeStore, hsize);
+		if (backingStoreAllocation == SYSERR)
+			return SYSERR;
+		ptr->pid = pid;
+		ptr->hsize = hsize;
+	} else {
+		return SYSERR;
+	}
+	restore(ps);
 	return OK;
+	
+	//pseducode for the above logic
+	/*1 getStoreId (free BS) from get_bs()
+	2 If getStoreId != -1:
+		store storeId in proctab
+		update hsize in BS || or store hsize in proctab
+	*/
+
+
+		
 }
 
 /*------------------------------------------------------------------------
