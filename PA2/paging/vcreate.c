@@ -33,20 +33,27 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	int pid = create(procaddr,ssize,priority,name,nargs,args);
 	disable(ps);
 	struct pentry *ptr = &proctab[pid];
+	
+	//used in xmmap
+	ptr->isPrivate = 1;
+
 	//get_bsm will return a free entry from bsm_tab by checking its status
 	int freeStore = get_bsm(NULL);
 	if (freeStore != -1) {
 		//get_bs() returns any valid number if the freeStore(BS) has hsize (pages)
 		//available else it return a SYSERR
-		int backingStoreAllocation = get_bs(freeStore, hsize);
-		if (backingStoreAllocation == SYSERR)
-			return SYSERR;
-		ptr->pid = pid;
+		//int backingStoreAllocation = get_bs(freeStore, hsize);
+		//if (backingStoreAllocation == SYSERR)
+			//return SYSERR;
+
+		ptr->store = freeStore;
 		ptr->hsize = hsize;
+		
 	} else {
 		return SYSERR;
 	}
 	restore(ps);
+	// create pdbr and ptables
 	return OK;
 	
 	//pseducode for the above logic

@@ -133,7 +133,7 @@ sysinit()
 	struct	sentry	*sptr;
 	struct	mblock	*mptr;
 	SYSCALL pfintr();
-
+	init_frm();
 	
 
 	
@@ -236,6 +236,19 @@ sysinit()
 	pptr->paddr = (WORD) nulluser;
 	pptr->pargs = 0;
 	pptr->pprio = 0;
+	// adding pdbr for nulluser
+	pptr->pdbr = 1028*4096;
+	struct pd_t *ptr = (pd_t*) pptr->pdbr;
+	int i = 0;
+	while (i < 4) {
+		ptr->pd_pres = 1;
+		ptr->pd_write = 1;
+		ptr->pd_base = (i + 1024)*4096;
+		ptr++;
+		i++;
+		//check if other bits need to be set or not.
+	}
+
 	currpid = NULLPROC;
 
 	for (i=0 ; i<NSEM ; i++) {	/* initialize semaphores */

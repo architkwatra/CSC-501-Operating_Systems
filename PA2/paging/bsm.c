@@ -21,8 +21,7 @@ SYSCALL init_bsm()
 SYSCALL get_bsm(int* avail)
 {
 	int i = 0;
-	while (i < 8) {
-		
+	while (i < 8) {	
 		if (bsm_tab[i].bs_status == 0) {
 			return (i);	
 		}
@@ -46,6 +45,7 @@ SYSCALL free_bsm(int i)
  */
 SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 {
+		
 }
 
 
@@ -55,6 +55,11 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
  */
 SYSCALL bsm_map(int pid, int vpno, int source, int npages)
 {
+	bsm_tab[source].bs_status = 1;
+	bsm_tab[source].bs_pid = pid;
+	bsm_tab[source].bs_vpno = vpno;
+	bsm_tab[source].bs_npages = npages;
+	proctab[currpid].store = source;
 }
 
 
@@ -65,6 +70,9 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
  */
 SYSCALL bsm_unmap(int pid, int vpno, int flag)
 {
+	int store = proctab[pid].store;
+	bsm_tab[store].bs_status = 0;
+	bsm_tab[store].bs_isPrivate = 0;
 }
 
 

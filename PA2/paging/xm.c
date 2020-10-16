@@ -10,21 +10,36 @@
  * xmmap - xmmap
  *-------------------------------------------------------------------------
  */
-SYSCALL xmmap(int virtpage, bsd_t source, int npages)
+SYSCALL xmmap(int virtpage, int source, int npages)
 {	
 	// Ask about semaphore in this since getpid() might contxswch and return the wrong pid
 	if (npages <= 0 || 
-		npages > 255 || 
+		npages > 256 || 
 		source < 0 || 
-		source > 7 || 
-		bsm_tab[source].bs_pid != getpid() ||
-		bsm_tab[source].bs_status == 1)
+		source > 7)
 		return SYSERR;
-		
-	bsm_tab[source].bs_status = 1;
-	bsm_tab[source].bs_vpno = virtpage;
-	bsm_tab[source].bs_npages = npages;
-	return(OK)
+
+
+	
+	//Remember to set isPrivate variable in vcreate
+	if (proctab[currpid].isPrivate == 1) {
+		if (bsm_tab[source].bs_status == 1) 
+			return SYSERR;
+		bsm_map(currpid, virtpage, source, npages);
+		bsm_tab[source].bs_isPrivate = 1;
+	} else {
+		if (bsm_tab[source].bs_status == 1) 
+			if (bsm_tab[source].bs_isPrivate == 1)
+				return SYSERR;
+			else {
+				if (bsm_tab[source].bs_npages < npages)
+					return SYSERR;
+			}
+
+		bsm_map(currpid, virtpage, source, npages);
+
+	}
+	
 }
 
 
