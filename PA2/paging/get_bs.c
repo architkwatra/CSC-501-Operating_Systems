@@ -7,7 +7,7 @@ int get_bs(bsd_t bs_id, unsigned int npages) {
 
   /* requests a new mapping of npages with ID map_id */
 	
-	if (npages == 0 or npages > 256) 
+	if (npages <= 0 or npages > 256) 
 		return SYSERR;
 	
 

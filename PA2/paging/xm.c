@@ -37,9 +37,10 @@ SYSCALL xmmap(int virtpage, int source, int npages)
 			}
 
 		bsm_map(currpid, virtpage, source, npages);
+		bsm_tab[source].bs_isPrivate = 0;
 
 	}
-	
+	return OK;	
 }
 
 
@@ -53,12 +54,12 @@ SYSCALL xmunmap(int virtpage)
 	int i = 0;
 	while (i < 8) {
 		if (bsm_tab[i].bs_vpno == virtpage) {
-			bsm_tab[i].bs_status = 0;
+			bsm_unmap(currpid, virtpage, 0);
 			return (OK);
-		}
-			
+		}	
+		i++;
 	}
-        
+	kprintf("Returning SYSERR from xmunmap\n");        
         return SYSERR;	
 
 }

@@ -16,7 +16,7 @@ WORD	*vgetmem(nbytes)
 {
 	struct mblock *ptr = &(proctab[currpid])->vmemlist;
 		
-	kprintf("To be implemented!\n");
+	kprintf("Inside vgetmem()\n");
 	STATWORD ps;
         struct  mblock  *p, *q, *leftover;
 

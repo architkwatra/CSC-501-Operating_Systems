@@ -9,9 +9,11 @@
  *-------------------------------------------------------------------------
  */
 SYSCALL init_frm()
-{
-	struct fr_map_t *ptr = (fr_map_t*)1024*4096;
+{	
+	kprintf("Declring the page_frames array for all the frames\n");
+	struct fr_map_t *ptr = (fr_map_t*)1024*4096 + 1;
 	struct fr_map_t frm_tab[NFRAMES];
+	kprintf("The first frame will be pointing at ptr\n");
 	int i = 0;
 	while (i < NFRAMES) {
 		frm_tab[i] = ptr;

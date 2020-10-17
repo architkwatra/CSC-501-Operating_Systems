@@ -133,6 +133,7 @@ sysinit()
 	struct	sentry	*sptr;
 	struct	mblock	*mptr;
 	SYSCALL pfintr();
+	kprintf("check if the init_frm() needs to be called with 'SYSCALL'\n");
 	init_frm();
 	
 
@@ -144,10 +145,11 @@ sysinit()
 	int j = 0;
 	int pageNumber: 20;
 	globalPagePFN = 0;
-
+	kprintf("Setting the global page tables\n");
 	while (i < 4) {
-		struct fr_map_t *frmPointer = &frm_tab[i];
-		//pageNumber += 1024;
+		//i+1 is done because 1025th frame. frm_tab is the frame array 
+		//each having 1024 entries
+		struct fr_map_t *frmPointer = &frm_tab[i+1];
 		while (j < 1024) {
 			struct pt_t *entryPointer = &(frmPointer->entries[j]);
 			entryPointer->pt_pres = 1;
@@ -160,15 +162,6 @@ sysinit()
 		i++;
 	}
 	
-	while (i < 4096) {
-		*ptr->pt_pres = 1;
-		*ptr->pt_write = 1;
-		*ptr->pt_base = pageNumber;
-		++ptr;
-		if (i % 1023 == 0)
-			pageNumber += 1024;
-		i++;
-	}
 
 
 	numproc = 0;			/* initialize system variables */
@@ -236,18 +229,24 @@ sysinit()
 	pptr->paddr = (WORD) nulluser;
 	pptr->pargs = 0;
 	pptr->pprio = 0;
-	// adding pdbr for nulluser
-	pptr->pdbr = 1028*4096;
+
+	// adding pdbr for nulluser which is pointing at the 1024th frame/page
+	kprintf("Setting the page directory for the null process\n");
+	pptr->pdbr = 1023*4096 + 1;
 	struct pd_t *ptr = (pd_t*) pptr->pdbr;
 	int i = 0;
 	while (i < 4) {
 		ptr->pd_pres = 1;
 		ptr->pd_write = 1;
-		ptr->pd_base = (i + 1024)*4096;
+		ptr->pd_base = (i + 1024)*4096 + 1;
 		ptr++;
 		i++;
 		//check if other bits need to be set or not.
 	}
+	
+	kprintf("setting pdbr for the null proc in inirialize() (cr3 basically) \n\n");	
+	write_cr3(pptr->pdbr);
+	
 
 	currpid = NULLPROC;
 
@@ -258,7 +257,9 @@ sysinit()
 
 	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */
 
-
+	//My change,  basically setting the 31st bit of the cr0 register
+	enable_paging();	
+	
 	return(OK);
 }
 

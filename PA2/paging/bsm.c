@@ -36,7 +36,19 @@ SYSCALL get_bsm(int* avail)
  */
 SYSCALL free_bsm(int i)
 {
-	bsm_tab[i].bs_status = 0;
+	kprintf("Inside free_bsm() called from release_bs()\n");	
+	if (bsm_tab[i].bs_isPrivate == 1) {
+		//check if the below statement is even required or not
+		proctab[bsm_tab[i].bs_pid].store = -1;
+		bsm_tab[i].bs_status = 0;
+		bsm_tab[i].bs_pid = -1;
+		bsm_tab[i].bs_vpno = 0;
+		bsm_tab[i].bs_npages = 0;
+	} else {
+		return -1;
+	}
+	return (OK);
+		
 }
 
 /*-------------------------------------------------------------------------
@@ -73,6 +85,7 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
 	int store = proctab[pid].store;
 	bsm_tab[store].bs_status = 0;
 	bsm_tab[store].bs_isPrivate = 0;
+	proctab[pid].store = -1;
 }
 
 

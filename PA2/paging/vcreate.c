@@ -46,6 +46,8 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 		//if (backingStoreAllocation == SYSERR)
 			//return SYSERR;
 
+		
+		xmmap((int)procaddr >> 12, freeStore, hsize);
 		ptr->store = freeStore;
 		ptr->hsize = hsize;
 		
