@@ -72,7 +72,13 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 		/* Bottom of stack */
 	*saddr = MAGIC;
 	savsp = (unsigned long)saddr;
-
+	
+	
+	//Make the page directory for the current process
+	kprintf("Making the page directory for the new process in create \n\n");	
+	
+	
+	
 	/* push arguments */
 	pptr->pargs = nargs;
 	a = (unsigned long *)(&args) + (nargs-1); /* last argument	*/

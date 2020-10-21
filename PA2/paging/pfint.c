@@ -12,8 +12,10 @@
 SYSCALL pfint()
 {
 
-  kprintf("To be implemented!\n");
-  return OK;
+	kprintf("Inside the pfint.c file and function!\n");
+	unsigned long vPageNumber = read_cr2();
+		
+	return OK;
 }
 
 

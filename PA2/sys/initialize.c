@@ -144,17 +144,23 @@ sysinit()
 	int i = 0;
 	int j = 0;
 	int pageNumber: 20;
-	globalPagePFN = 0;
+	int globalPagePFN = 0;
 	kprintf("Setting the global page tables\n");
 	while (i < 4) {
-		//i+1 is done because 1025th frame. frm_tab is the frame array 
+		//i+1 is done because 1025th frame is used for the page table. 1024th frame is used for the page directory. frm_tab is the frame array 
 		//each having 1024 entries
 		struct fr_map_t *frmPointer = &frm_tab[i+1];
+		
+		frmPointer->fr_status = 1;
+		frmPointer->fr_type = FR_TBL;
+
 		while (j < 1024) {
-			struct pt_t *entryPointer = &(frmPointer->entries[j]);
-			entryPointer->pt_pres = 1;
-			entryPointer->pt_write = 1;
-			entryPointer->pt_base = globalPagePFN;
+			//check the logic and check the data type of currAddress
+			long currAddress = frmPointer + 4*j;
+			struct pt_t *pageEntry = (pt_t*)currAddress;
+			pageEntry->pt_pres = 1;
+			pageEntry->pt_write = 1;
+			pageEntry->pt_base = globalPagePFN;
 			j++;
 			globalPagePFN++;
 		}
@@ -162,8 +168,6 @@ sysinit()
 		i++;
 	}
 	
-
-
 	numproc = 0;			/* initialize system variables */
 	nextproc = NPROC-1;
 	nextsem = NSEM-1;
@@ -232,11 +236,19 @@ sysinit()
 
 	// adding pdbr for nulluser which is pointing at the 1024th frame/page
 	kprintf("Setting the page directory for the null process\n");
-	pptr->pdbr = 1023*4096 + 1;
+	
+	struct fr_map_t *framePointer = pptr->pdbr = &frm_tab[0];
+	framePointer->fr_status = 1;
+	framePointer->fr_pid = NULLPROC;
+	framePointer->fr_type = FR_DIR;
+	
+	
 	struct pd_t *ptr = (pd_t*) pptr->pdbr;
+	
 	int i = 0;
 	while (i < 4) {
 		ptr->pd_pres = 1;
+		//pd_write = 1 means that the page is not writable
 		ptr->pd_write = 1;
 		ptr->pd_base = (i + 1024)*4096 + 1;
 		ptr++;
@@ -258,6 +270,8 @@ sysinit()
 	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */
 
 	//My change,  basically setting the 31st bit of the cr0 register
+	kprintf("calling the set_evec() in initilize.c and enable_paging()\n\n");
+	set_evec(14, pfintr);
 	enable_paging();	
 	
 	return(OK);
