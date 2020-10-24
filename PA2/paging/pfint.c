@@ -33,15 +33,15 @@ SYSCALL pfint()
 		//create new page table for process
 		//mark pd_pres = 1
 		//add location of pt to pd_base
-		int *framePointer;
-		if (get_frm(framePointer) == SYSERR) {
+		int framePointer;
+		if (get_frm(&framePointer) == SYSERR) {
  	             	kill(getpid());
                  	return SYSERR;
 	        }
-		int idx = (freeFramePointer)/NBPG - FRAME0;
+		int idx = (framePointer)/NBPG - FRAME0;
 		frm_tab[idx].fr_status = 1;
 		frm_tab[idx].fr_type = FR_TBL;
-		frm_tab[idx].fr_pid = getpid();
+		frm_tab[idx].fr_pid = getPbsmpid();
 		pdePtr->pd_pres = 1;
 		pdePtr->pd_base = framePointer;
 	}
@@ -53,7 +53,7 @@ SYSCALL pfint()
 		kill(getpid());
 		return SYSERR;
 	}
-	idx = (freeFramePointer)/NBPG - FRAME0;
+	idx = (int)(framePointer)/NBPG - FRAME0;
 	frm_tab[idx].fr_status = 1;
 	frm_tab[idx].fr_type = FR_PAGE;
 	frm_tab[idx].fr_pid = getpid();
@@ -73,11 +73,11 @@ SYSCALL pfint()
 	}
 	else {
 		struct fifo frameToInsert;
-                frameToInsert.idx = idx;
+        frameToInsert.idx = idx;
 		frameToInsert.age = 255;
 
 		frameToInsert.next = fifohead.next;
-		fifohead.next = frameToInsert;
+		fifohead.next = &frameToInsert;
 	}
 
 	read_bs( (char*)framePointer, *store, *pageth);

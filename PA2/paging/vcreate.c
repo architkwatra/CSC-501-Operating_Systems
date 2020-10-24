@@ -41,11 +41,11 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	int freeStore = get_bsm(NULL);
 	if (freeStore != SYSERR) {
 		
-		bsm_map(pid, procaddr>>12, freeStore, hsize);
-		bsm_tab[freeStore].bs_prvt = 1;
+		bsm_map(pid, (int)procaddr>>12, freeStore, hsize);
+		bsm_tab[freeStore].bs_isPrivate = 1;
 		
-		(proctab[pid].vmemlist)->mnext = (mblock*) BACKING_STORE_BASE + freeStore*BACKING_STORE_UNIT_SIZE;
-		proctab[pid].vmemlist->vhpnpages = hsize;
+		(proctab[pid].vmemlist)->mnext = (struct mblock*) BACKING_STORE_BASE + freeStore*BACKING_STORE_UNIT_SIZE;
+		proctab[pid].vhpnpages = hsize;
 		proctab[pid].vmemlist->mlen = hsize*NBPG;
 		
 		ptr->store = freeStore;

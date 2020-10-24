@@ -4,6 +4,7 @@
 #include <kernel.h>
 #include <mem.h>
 #include <proc.h>
+#include<paging.h>
 
 extern struct pentry proctab[];
 /*------------------------------------------------------------------------
@@ -14,7 +15,8 @@ SYSCALL	vfreemem(block, size)
 	struct	mblock	*block;
 	unsigned size;
 {
-	struct mblock *ptr = &(proctab[getpid()])->vmemlist;
+	struct mblock *ptr = proctab[getpid()].vmemlist;
+        
 	STATWORD ps;
         struct  mblock  *p, *q;
         unsigned top;
@@ -22,20 +24,20 @@ SYSCALL	vfreemem(block, size)
         
         
         
-        unisgned int maxadr = BACKING_STORE_BASE + proctab[getpid()].store*(BACKING_STORE_UNIT_SIZE) 
+        unsigned int maxadr = BACKING_STORE_BASE + proctab[getpid()].store*(BACKING_STORE_UNIT_SIZE) 
                 +  proctab[getpid()].vhpnpages*NBPG;
 
 
         if (size==0 || (unsigned)block>(unsigned)maxaddr
-            || ((unsigned)block)<((unsigned) BACKING_STORE_BASE + proctab[getpid()].store*(BACKING_STORE_UNIT_SIZE))
-                return(SYSERR);
+            || ((unsigned)block) < ((unsigned) BACKING_STORE_BASE + proctab[getpid()].store*(BACKING_STORE_UNIT_SIZE)))
+                return (SYSERR);
         size = (unsigned)roundmb(size);
         disable(ps);
-        for( p=ptr.mnext,q= &ptr;
+        for( p = ptr->mnext,q= &ptr;
              p != (struct mblock *) NULL && p < block ;
              q=p,p=p->mnext )
                 ;
-        if (((top=q->mlen+(unsigned)q)>(unsigned)block && q!= &ptr) ||
+        if (((top = q->mlen+(unsigned)q) > (unsigned)block && q!= &ptr) ||
             (p!=NULL && (size+(unsigned)block) > (unsigned)p )) {
                 restore(ps);
                 return(SYSERR);

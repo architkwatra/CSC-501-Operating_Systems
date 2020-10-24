@@ -10,7 +10,7 @@
  * xmmap - xmmap
  *-------------------------------------------------------------------------
  */
-SYSCALL xmmap(int virtpage, int source, int npages)
+SYSCALL xmmap(int virtpage, bsd_t source, int npages)
 {	
 	// Ask about semaphore in this since getpid() might contxswch and return the wrong pid
 	if (npages <= 0 || 

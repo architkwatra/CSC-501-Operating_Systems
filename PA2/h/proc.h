@@ -78,6 +78,7 @@ struct	pentry	{
         int     vhpnpages;              /* vheap size                   */
         struct mblock *vmemlist;        /* vheap list              	*/
 	int hsize;
+	int isPrivate;
 };
 
 

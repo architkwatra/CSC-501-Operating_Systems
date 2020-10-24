@@ -31,7 +31,8 @@ SYSCALL get_bsm(int* avail)
 	while (i < 8) {
 		//add pointer	
 		if (bsm_tab[i].bs_status == 0) {
-			return (i);	
+			*avail = i;
+			return OK;	
 		}
 	}
 	return -1;
@@ -60,7 +61,7 @@ SYSCALL free_bsm(int i)
  */
 SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 {
-	struct proctab *ptr = &proctab[pid];
+	struct pentry *ptr = &proctab[pid];
 	
 	if (ptr->store >= 0 && vaddr <= NBPG*bsm_tab[ptr->store].bs_npages) {
 		*store = ptr->store;

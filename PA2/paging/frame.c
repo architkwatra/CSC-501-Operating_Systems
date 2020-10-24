@@ -16,7 +16,7 @@ SYSCALL init_frm()
 	
 	fr_map_t frm_tab[NFRAMES];
 	//now I don't need this.
-	fr_map_t *ptr = (fr_map_t*)NFRAMES*NBPG;
+	fr_map_t *ptr = NFRAMES*NBPG;
 	kprintf("The first frame will be pointing at ptr. Also check the assigning of the fr_status\n");
 	int i = 0;
 	while (i < NFRAMES) {
@@ -49,7 +49,7 @@ SYSCALL get_frm(int* avail)
 		if (frm_tab[i].fr_status == 0) {
 			//FRAME0 will give the frame till kernel memory 
 			//and after that adding i will give the free frame
-			*avail = (int*) (FRAM0 + i)*NBPG;
+			*avail = (int*) (FRAME0 + i)*NBPG;
 			//can I do avail = &frm_tab[i]???
 			return i;
 		}
@@ -91,7 +91,7 @@ SYSCALL get_frm(int* avail)
 		minprev->next = (minprev->next)->next;
 		free_frm(idx);
 		markPTENonExistent(idx);
-		avail = (int*)(FRAME0 + idx)*NBPG;	
+		*avail = (FRAME0 + idx)*NBPG;	
 		
 		return OK;
 	}
@@ -100,7 +100,7 @@ SYSCALL get_frm(int* avail)
 		
 		while (1) {
 			if (scPointer->next == &scqhead) {
-				scPointer = scqhead->next;
+				scPointer = scqhead.next;
 			}
 			
 			markIfDirty((scPointer->next)->idx);
@@ -109,7 +109,7 @@ SYSCALL get_frm(int* avail)
 				//call free frame
 				free_frm(idx);
 				markPTENonExistent(idx);
-				avail = (int*)(FRAME0 + idx)*NBPG;
+				*avail = (FRAME0 + idx)*NBPG;
 
 
 				//deleting node from scq
@@ -126,11 +126,11 @@ SYSCALL get_frm(int* avail)
 
 int markPTENonExistent(int frameNumber) {
 
-	int vpn = frm_tab[frameNumber];
+	int vpn = frm_tab[frameNumber].fr_vpno;
 	unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
 	unsigned long ptNumber = vpn >> 10;
-	unsigned long pageNumber = (von << 10) >> 10;
-	pt_t *ptePointer = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
+	unsigned long pageNumber = (vpn << 10) >> 10;
+	pd_t *pdePtr = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
 	pt_t *ptePointer = (pt_t*) pdePtr->pd_base + sizeof(pt_t)*pageNumber;
 	ptePointer->pt_pres = 0;
 	
@@ -181,10 +181,10 @@ int markIfDirty(int idx) {
         unsigned int pt =  pdePtr->pd_base;
         pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
         if (ptePointer->pt_dirty == 1) {
-		frm_tab[i].fr_dirty = 1;
+		frm_tab[idx].fr_dirty = 1;
         }
 	else
-		frm_tab[i].fr_dirty = 0;
+		frm_tab[idx].fr_dirty = 0;
 
         return OK;
 
@@ -213,7 +213,7 @@ int writeDirtyFrame(int i) {
                         kill(frm_tab[i].fr_pid);
                         return SYSERR;
                 }   
-                char *pointerToSrc = (char*)(FRAME0 + i)*NBPG;
+                char *pointerToSrc = (FRAME0 + i)*NBPG;
                 write_bs(pointerToSrc, *store, *pageth);
                 
                 frm_tab[i].fr_dirty = 0;
@@ -257,7 +257,7 @@ SYSCALL free_frm(int i)
 	frm_tab[i].fr_status = 0;
     frm_tab[i].fr_vpno = -1;
 	if (frm_tab[i].fr_dirty == 1)
-		writeDirtyFrame(i)
+		writeDirtyFrame(i);
 	frm_tab[i].fr_pid = -1;
 	return OK;
 	
