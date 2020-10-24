@@ -1,5 +1,7 @@
+
+
+
 /* i386.c - setsegs */
-  kprintf("xmmap - to be implemented!\n");
 
 #include <icu.h>
 #include <i386.h>

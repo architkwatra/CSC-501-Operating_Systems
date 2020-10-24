@@ -58,7 +58,7 @@ typedef struct{
   int fr_refcnt;			/* reference count		*/
   int fr_type;				/* FR_DIR, FR_TBL, FR_PAGE	*/
   int fr_dirty;
-  struct pt_t entries[1024];
+
 }fr_map_t;
 
 
@@ -116,7 +116,7 @@ SYSCALL xunmap(int);
 
 /* given calls for dealing with backing store */
 
-int get_bs(bsd_t, unsigned int);
+int get_bs(int, unsigned int);
 SYSCALL release_bs(bsd_t);
 SYSCALL read_bs(char *, bsd_t, int);
 SYSCALL write_bs(char *, bsd_t, int);

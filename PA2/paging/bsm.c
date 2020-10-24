@@ -28,7 +28,7 @@ SYSCALL init_bsm()
 SYSCALL get_bsm(int* avail)
 {
 	int i = 0;
-	while (i < NBS) {
+	while (i < 8) {
 		//add pointer	
 		if (bsm_tab[i].bs_status == 0) {
 			return (i);	
