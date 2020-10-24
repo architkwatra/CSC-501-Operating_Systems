@@ -8,17 +8,15 @@
  * init_frm - initialize frm_tab
  *-------------------------------------------------------------------------
  */
-
+static unsigned long *eax;
 SYSCALL init_frm()
 {	
 	
 	kprintf("Declaring the page_frames array for all the frames\n");
 	
-	struct fr_map_t frm_tab[NFRAMES];
-	
-	struct fr_map_t *ptr = (fr_map_t*)NFRAMES*NBPG;
-	
-	
+	fr_map_t frm_tab[NFRAMES];
+	//now I don't need this.
+	fr_map_t *ptr = (fr_map_t*)NFRAMES*NBPG;
 	kprintf("The first frame will be pointing at ptr. Also check the assigning of the fr_status\n");
 	int i = 0;
 	while (i < NFRAMES) {
@@ -68,47 +66,58 @@ SYSCALL get_frm(int* avail)
 	//This gives the frame which should be swapped out
 	int frameNumber = -1;
 	if (currentPolicy == AGING) {
-		struct agingPolicyStruct *p = &fifoHead;
-		struct agingPolicyStruct *q = &(fifoHead->next);
-		struct agingPolicyStruct *minPrev = q;
+		struct fifo *q = &fifohead;
+		struct fifo *p = fifohead.next;
+		struct fifo *minprev = q;	
 		int min = 256;
 		while (p != NULL) {
-			p->age = p->age >> 1;
-			if (isAccSet(p->frameNumber) != SYSERR) 
-				p->age += 128;
+
+			p->age = p->age>>1;
+			
+			if (isAccSet(p->idx) != -1) {
+				if (p->age + 128 > 255)
+					p->age = 255;
+				else
+					p->age += 128;
+			}
 			if (p->age < min) {
 				min = p->age;
-				minPrev = q;
+				minprev = q;
 			}
 			q = p;
 			p = p->next;
 		}
-		frameNumber = minPrev->next->frameNumber;
-		minPrev->next = minPrev->next->next;
-		free_frm(frameNumber);
-		markPTENonExistent(frameNumber);
-		avail = (int*)NBPG*(FRAME0 + frameNumber)
+		int idx = (minprev->next)->idx;
+		minprev->next = (minprev->next)->next;
+		free_frm(idx);
+		markPTENonExistent(idx);
+		avail = (int*)(FRAME0 + idx)*NBPG;	
+		
 		return OK;
 	}
 	
 	else if (currentPolicy == SC) {
 		
-		struct scPolicy *scPtr = scHeadPointer;
-
-		while (scHeadPointer != NULL && scHeadPointer->next != scPtr) {
+		while (1) {
+			if (scPointer->next == &scqhead) {
+				scPointer = scqhead->next;
+			}
 			
-			markIfDirty();
-			frameNumber = isAccSet(scHeadPointer->next->frameNumber);
-			if ( frameNumber == scHeadPointer->next->frameNumber ) {
+			markIfDirty((scPointer->next)->idx);
+			int idx = isAccSet((scPointer->next)->idx);
+			if (idx == (scPointer->next)->idx) {
 				//call free frame
-				free_frm(frameNumber);
-				markPTENoneExistent(frameNumber);
-				avail = (int*)NBPG*(FRAME0 + frameNumber);
-				scHeadPointer->next = scHeadPointer->next->next;
+				free_frm(idx);
+				markPTENonExistent(idx);
+				avail = (int*)(FRAME0 + idx)*NBPG;
+
+
+				//deleting node from scq
+				scPointer->next = (scPointer->next)->next;
 				return OK;
 			}
 			
-			scHeadPointer = scHeadPointer->next;
+			scPointer = scPointer->next;
 		}
 	}
 	
@@ -121,8 +130,8 @@ int markPTENonExistent(int frameNumber) {
 	unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
 	unsigned long ptNumber = vpn >> 10;
 	unsigned long pageNumber = (von << 10) >> 10;
-	struct pt_t *ptePointer = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
-	struct pt_t *ptePointer = (pt_t*) pdePtr->pd_base + sizeof(pt_t)*pageNumber;
+	pt_t *ptePointer = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
+	pt_t *ptePointer = (pt_t*) pdePtr->pd_base + sizeof(pt_t)*pageNumber;
 	ptePointer->pt_pres = 0;
 	
 	if (getpid() == frm_tab[frameNumber].fr_pid) {
@@ -145,10 +154,10 @@ int isAccSet(int idx) {
         unsigned long pageNumber = (vpn<<10)>>10;
 	
         unsigned long pdeAddress = pdbr + 4*ptNumber;
-	struct pd_t *pdePtr = (pd_t*) pdeAddress;
+	pd_t *pdePtr = (pd_t*) pdeAddress;
 	
 	unsigned int pt =  pdePtr->pd_base;
-	struct pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
+	pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
 	if (ptePointer->pt_acc == 0) {
 		return idx;
 	}
@@ -167,10 +176,10 @@ int markIfDirty(int idx) {
         unsigned long pageNumber = (vpn<<10)>>10;
 
         unsigned long pdeAddress = pdbr + 4*ptNumber;
-        struct pd_t *pdePtr = (pd_t*) pdeAddress;
+        pd_t *pdePtr = (pd_t*) pdeAddress;
 
         unsigned int pt =  pdePtr->pd_base;
-        struct pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
+        pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
         if (ptePointer->pt_dirty == 1) {
 		frm_tab[i].fr_dirty = 1;
         }
@@ -201,7 +210,7 @@ int writeDirtyFrame(int i) {
 
 		int *store, *pageth; 
                 if (bsm_lookup(frm_tab[i].fr_pid, frm_tab[i].fr_vpno*NBPG /*(vaddr)*/, store, pageth) == SYSERR) {
-                        kill(getpid());
+                        kill(frm_tab[i].fr_pid);
                         return SYSERR;
                 }   
                 char *pointerToSrc = (char*)(FRAME0 + i)*NBPG;
@@ -244,12 +253,12 @@ int removeFramesOnKill(int pid) {
  */
 SYSCALL free_frm(int i)
 {
+	kprintf("PAGE REPLACED = %d", i);
 	frm_tab[i].fr_status = 0;
-	frm_tab[i].fr_pid = -1;
-        frm_tab[i].fr_vpno = -1;
-	
+    frm_tab[i].fr_vpno = -1;
 	if (frm_tab[i].fr_dirty == 1)
 		writeDirtyFrame(i)
+	frm_tab[i].fr_pid = -1;
 	return OK;
 	
 }

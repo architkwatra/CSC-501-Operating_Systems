@@ -11,7 +11,7 @@
  */
 SYSCALL init_bsm()
 {
-	struct bs_map_t bsm_tab[8];
+	bs_map_t bsm_tab[8];
 	 int i = 0;
         while (i < 8) {
 		//check if any other variables need to be set
@@ -28,7 +28,7 @@ SYSCALL init_bsm()
 SYSCALL get_bsm(int* avail)
 {
 	int i = 0;
-	while (i < 8) {
+	while (i < NBS) {
 		//add pointer	
 		if (bsm_tab[i].bs_status == 0) {
 			return (i);	
@@ -44,19 +44,12 @@ SYSCALL get_bsm(int* avail)
  */
 SYSCALL free_bsm(int i)
 {
-	kprintf("Inside free_bsm() called from release_bs()\n");	
-	//check if bs_isPrivate is set to 1 in vcreate
-	if (bsm_tab[i].bs_isPrivate == 1) {
-		//check if the below statement is even required or not, or do it from where the function is being called;
-		proctab[bsm_tab[i].bs_pid].store = -1;
-		bsm_tab[i].bs_status = 0;
-		bsm_tab[i].bs_pid = -1;
-		bsm_tab[i].bs_vpno = 0;
-		bsm_tab[i].bs_npages = 256;
-		bsm_tab[i].bs_isPrivate = 0;
-	} else {
-		return SYSERR;
-	}
+	proctab[bsm_tab[i].bs_pid].store = -1;
+	bsm_tab[i].bs_status = 0;
+	bsm_tab[i].bs_pid = -1;
+	bsm_tab[i].bs_vpno = -1;
+	bsm_tab[i].bs_npages = 256;
+	bsm_tab[i].bs_isPrivate = 0;
 	return (OK);
 		
 }
@@ -67,7 +60,14 @@ SYSCALL free_bsm(int i)
  */
 SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 {
-		
+	struct proctab *ptr = &proctab[pid];
+	
+	if (ptr->store >= 0 && vaddr <= NBPG*bsm_tab[ptr->store].bs_npages) {
+		*store = ptr->store;
+		*pageth = (int) vaddr >> 12;
+		return OK;
+	}
+	return SYSERR;
 }
 
 
@@ -81,7 +81,7 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
 	bsm_tab[source].bs_pid = pid;
 	bsm_tab[source].bs_vpno = vpno;
 	bsm_tab[source].bs_npages = npages;
-	proctab[currpid].store = source;
+	proctab[pid].store = source;
 }
 
 
@@ -92,9 +92,6 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
  */
 SYSCALL bsm_unmap(int pid, int vpno, int flag)
 {
-	int store = proctab[pid].store;
-	bsm_tab[store].bs_status = 0;
-	bsm_tab[store].bs_isPrivate = 0;
 	proctab[pid].store = -1;
 }
 

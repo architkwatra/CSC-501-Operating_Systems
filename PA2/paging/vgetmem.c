@@ -14,6 +14,7 @@ extern struct pentry proctab[];
 WORD	*vgetmem(nbytes)
 	unsigned nbytes;
 {
+        //check if this is required or not
 	struct mblock *ptr = &(proctab[currpid])->vmemlist;
 		
 	kprintf("Inside vgetmem()\n");
@@ -21,12 +22,12 @@ WORD	*vgetmem(nbytes)
         struct  mblock  *p, *q, *leftover;
 
         disable(ps);
-        if (nbytes==0 || ptr.mnext== (struct mblock *) NULL) {
+        if (nbytes==0 || proctab[getpid()].vmemlist.mnext== (struct mblock *) NULL) {
                 restore(ps);
                 return( (WORD *)SYSERR);
         }
         nbytes = (unsigned int) roundmb(nbytes);
-        for (q= &ptr,p=ptr.mnext ;
+        for (q = &(proctab[getpid()].vmemlist),p=(proctab[getpid()].vmemlist.mnext) ;
              p != (struct mblock *) NULL ;
              q=p,p=p->mnext)
                 if ( p->mlen == nbytes) {

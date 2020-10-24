@@ -76,7 +76,28 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	
 	//Make the page directory for the current process
 	kprintf("Making the page directory for the new process in create \n\n");	
-	int avail;
+	struct  pentry  *pptr = &proctab[pid];
+	int *freeFramePointer = 0;
+	if (get_frm(freeFramePointer) == SYSERR) {
+               kill(getpid());
+               return SYSERR;
+        }
+	int frameId = ((int)freeFramePointer)/NBPG - FRAME0;
+	frm_tab[frameId].fr_status = 1;
+	frm_tab[frameId].fr_pid = pid;
+	frm_tab[frameId].fr_type = FR_DIR;
+	frm_tab[frameId].fr_vpno = (int)procaddr>>12;
+
+	pptr->pdbr = freeFramePointer;
+	
+	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
+	int i = 0;
+	for (; i < 4; i++) {
+			directoryPointer->pd_pres = 1;
+			directoryPointer->pd_write = 1;
+			directoryPointer->pd_base = (FRAME0 + i + 1)*NBPG;
+			directoryPointer++;
+	}
 	 
 			
 		

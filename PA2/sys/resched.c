@@ -83,6 +83,7 @@ int	resched()
 	PrintSaved(nptr);
 #endif
 	kprintf("setting the cr3 register with the pdbr for the current process \n\n");
+	writeBackDirtyFrames(currpid);
 	write_cr3(nptr->pdbr);	
 	ctxsw(&optr->pesp, optr->pirmask, &nptr->pesp, nptr->pirmask);
 

@@ -62,22 +62,50 @@ typedef struct{
 }fr_map_t;
 
 
-struct scPolicyStruct {
-	struct scolicy *next;
-	int frameNumber;
-};
+// struct scPolicyStruct {
+// 	struct scolicy *next;
+// 	int frameNumber;
+// };
 
-struct agingPolicyStruct {
-	int age;
-	int frameNumber;
-	struct agingPolicyStruct *next;
-	struct agingPolicyStruct *prev;
+// struct agingPolicyStruct {
+// 	int age;
+// 	int frameNumber;
+// 	struct agingPolicyStruct *next;
+// 	struct agingPolicyStruct *prev;
 	
-};
+// };
 
-extern struct scPolicyStruct scHead;
-extern struct agingPolicyStruct agingHead;
-extern scPolicyStruct *scHeadPointer;
+// extern struct scPolicyStruct scHead;
+// extern struct agingPolicyStruct agingHead;
+// extern scPolicyStruct *scHeadPointer;
+
+
+
+
+struct scq{
+	struct scq *next;
+	int idx;
+};
+struct fifo{
+	int idx;
+	int age;
+	struct fifo *next;
+};
+extern struct fifo fifohead;
+extern  struct  scq  scqhead;
+extern int frm;
+extern struct scq *scPointer;
+
+
+
+
+//make extern if required
+int markIfDirty(int);
+int markPTENonExistent(int);
+int writeBackDirtyFrames(int);
+int removeFramesOnKill(int);
+
+
 
 
 extern bs_map_t bsm_tab[];

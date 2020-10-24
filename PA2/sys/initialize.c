@@ -33,9 +33,21 @@ struct	qent	q[NQENT];	/* q table (see queue.c)		*/
 int	nextqueue;		/* next slot in q structure to use	*/
 char	*maxaddr;		/* max memory address (set by sizmem)	*/
 struct	mblock	memlist;	/* list of free memory blocks		*/
+
+
+struct scq scqhead;
+scqhead.next = NULL;
+struct scq *scPointer = &scqhead;
+
+
+
+
+
+
 #ifdef	Ntty
 struct  tty     tty[Ntty];	/* SLU buffers and mode control		*/
 #endif
+
 
 /* active system status */
 int	numproc;		/* number of live user processes	*/
@@ -48,6 +60,11 @@ int	console_dev;		/* the console device			*/
 
 /*  added for the demand paging */
 int page_replace_policy = SC;
+
+
+int frm = 0;
+
+
 
 /************************************************************************/
 /***				NOTE:				      ***/
@@ -149,7 +166,7 @@ sysinit()
 	while (i < 4) {
 		//i+1 is done because 1025th frame is used for the page table. 1024th frame is used for the page directory. frm_tab is the frame array 
 		//each having 1024 entries
-		struct fr_map_t *frmPointer = &frm_tab[i+1];
+		fr_map_t *frmPointer = &frm_tab[i+1];
 		
 		frmPointer->fr_status = 1;
 		frmPointer->fr_type = FR_TBL;
@@ -159,7 +176,7 @@ sysinit()
 			//frmPointer gives the address of the 
 			int currAddress = frmPointer + sizeof(pt_t)*j;
 			
-			struct pt_t *pageEntry = (pt_t*)currAddress;
+			pt_t *pageEntry = (pt_t*)currAddress;
 			pageEntry->pt_pres = 1;
 			pageEntry->pt_write = 1;
 			//check this logic
@@ -240,12 +257,12 @@ sysinit()
 	// adding pdbr for nulluser which is pointing at the 1024th frame/page
 	kprintf("Setting the page directory for the null process\n");
 	
-	struct fr_map_t *framePointer = pptr->pdbr = &frm_tab[0];
+	fr_map_t *framePointer = pptr->pdbr = &frm_tab[0];
 	framePointer->fr_status = 1;
 	framePointer->fr_pid = NULLPROC;
 	framePointer->fr_type = FR_DIR;
 	
-	struct pd_t *ptr = (pd_t*) pptr->pdbr;
+	pd_t *ptr = (pd_t*) pptr->pdbr;
 	
 	int i = 1;
 	while (i < 4) {

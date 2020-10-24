@@ -56,6 +56,10 @@ SYSCALL kill(int pid)
 						/* fall through	*/
 	default:	pptr->pstate = PRFREE;
 	}
+
+	removeFramesOnKill(pid);	
+	release_bs(proctab[pid].store);
+	
 	restore(ps);
 	return(OK);
 }

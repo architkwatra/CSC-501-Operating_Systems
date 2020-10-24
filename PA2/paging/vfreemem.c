@@ -19,8 +19,15 @@ SYSCALL	vfreemem(block, size)
         struct  mblock  *p, *q;
         unsigned top;
 
+        
+        
+        
+        unisgned int maxadr = BACKING_STORE_BASE + proctab[getpid()].store*(BACKING_STORE_UNIT_SIZE) 
+                +  proctab[getpid()].vhpnpages*NBPG;
+
+
         if (size==0 || (unsigned)block>(unsigned)maxaddr
-            || ((unsigned)block)<((unsigned) &end))
+            || ((unsigned)block)<((unsigned) BACKING_STORE_BASE + proctab[getpid()].store*(BACKING_STORE_UNIT_SIZE))
                 return(SYSERR);
         size = (unsigned)roundmb(size);
         disable(ps);

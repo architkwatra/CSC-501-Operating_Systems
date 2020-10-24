@@ -39,15 +39,15 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 
 	//get_bsm will return a free entry from bsm_tab by checking its status
 	int freeStore = get_bsm(NULL);
-	if (freeStore != -1) {
-		//get_bs() returns any valid number if the freeStore(BS) has hsize (pages)
-		//available else it return a SYSERR
-		//int backingStoreAllocation = get_bs(freeStore, hsize);
-		//if (backingStoreAllocation == SYSERR)
-			//return SYSERR;
-
+	if (freeStore != SYSERR) {
 		
-		xmmap((int)procaddr >> 12, freeStore, hsize);
+		bsm_map(pid, procaddr>>12, freeStore, hsize);
+		bsm_tab[freeStore].bs_prvt = 1;
+		
+		(proctab[pid].vmemlist)->mnext = (mblock*) BACKING_STORE_BASE + freeStore*BACKING_STORE_UNIT_SIZE;
+		proctab[pid].vmemlist->vhpnpages = hsize;
+		proctab[pid].vmemlist->mlen = hsize*NBPG;
+		
 		ptr->store = freeStore;
 		ptr->hsize = hsize;
 		
@@ -55,16 +55,7 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 		return SYSERR;
 	}
 	restore(ps);
-	// create pdbr and ptables
 	return OK;
-	
-	//pseducode for the above logic
-	/*1 getStoreId (free BS) from get_bs()
-	2 If getStoreId != -1:
-		store storeId in proctab
-		update hsize in BS || or store hsize in proctab
-	*/
-
 
 		
 }
