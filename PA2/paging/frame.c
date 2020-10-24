@@ -49,7 +49,7 @@ SYSCALL get_frm(int* avail)
 		if (frm_tab[i].fr_status == 0) {
 			//FRAME0 will give the frame till kernel memory 
 			//and after that adding i will give the free frame
-			*avail = (int*) (FRAME0 + i)*NBPG;
+			*avail = (FRAME0 + i)*NBPG;
 			//can I do avail = &frm_tab[i]???
 			return i;
 		}
@@ -135,7 +135,7 @@ int markPTENonExistent(int frameNumber) {
 	ptePointer->pt_pres = 0;
 	
 	if (getpid() == frm_tab[frameNumber].fr_pid) {
-		static unsigned long *eax;
+		//static unsigned long *eax;
 		eax = vpn*NBPG;
 		asm("invlpg eax");	
 	}

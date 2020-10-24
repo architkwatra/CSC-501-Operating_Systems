@@ -41,7 +41,7 @@ SYSCALL pfint()
 		int idx = (framePointer)/NBPG - FRAME0;
 		frm_tab[idx].fr_status = 1;
 		frm_tab[idx].fr_type = FR_TBL;
-		frm_tab[idx].fr_pid = getPbsmpid();
+		frm_tab[idx].fr_pid = getpid();
 		pdePtr->pd_pres = 1;
 		pdePtr->pd_base = framePointer;
 	}

@@ -14,7 +14,7 @@ SYSCALL srpolicy(int policy)
 {
   /* sanity check ! */
 	
-	if (policy == SC or policy == AG) {
+	if (policy == SC || policy == AGING) {
 		page_replace_policy = policy;
   		return OK;
 	}

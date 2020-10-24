@@ -36,11 +36,12 @@ struct	mblock	memlist;	/* list of free memory blocks		*/
 
 
 struct scq scqhead;
-scqhead.next = NULL;
+//scqhead.next = NULL;
 struct scq *scPointer = &scqhead;
+struct fifo fifohead;
 
-
-
+bs_map_t bsm_tab[8];
+fr_map_t frm_tab[NFRAMES];
 
 
 
@@ -158,9 +159,9 @@ sysinit()
 	// creating global page tables
 	// check the logic for pageNumber
 	
-	int i = 0;
-	int j = 0;
-	int pageNumber: 20;
+	i = 0;
+	j = 0;
+	//int pageNumber: 20;
 	int globalPagePFN = 0;
 	kprintf("Setting the global page tables\n");
 	while (i < 4) {
@@ -264,7 +265,7 @@ sysinit()
 	
 	pd_t *ptr = (pd_t*) pptr->pdbr;
 	
-	int i = 1;
+	i = 1;
 	while (i < 4) {
 		ptr->pd_pres = 1;
 		//pd_write = 1 means that the page is not writable
