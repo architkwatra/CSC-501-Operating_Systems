@@ -12,6 +12,13 @@
 SYSCALL init_bsm()
 {
 	struct bs_map_t bsm_tab[8];
+	 int i = 0;
+        while (i < 8) {
+		//check if any other variables need to be set
+		bsm_tab[i].bs_status = 0;
+		//check if this needs to be 256
+		bsm_tab[i].bs_npages = 256;
+	}
 }
 
 /*-------------------------------------------------------------------------
@@ -21,7 +28,8 @@ SYSCALL init_bsm()
 SYSCALL get_bsm(int* avail)
 {
 	int i = 0;
-	while (i < 8) {	
+	while (i < 8) {
+		//add pointer	
 		if (bsm_tab[i].bs_status == 0) {
 			return (i);	
 		}
@@ -37,15 +45,17 @@ SYSCALL get_bsm(int* avail)
 SYSCALL free_bsm(int i)
 {
 	kprintf("Inside free_bsm() called from release_bs()\n");	
+	//check if bs_isPrivate is set to 1 in vcreate
 	if (bsm_tab[i].bs_isPrivate == 1) {
-		//check if the below statement is even required or not
+		//check if the below statement is even required or not, or do it from where the function is being called;
 		proctab[bsm_tab[i].bs_pid].store = -1;
 		bsm_tab[i].bs_status = 0;
 		bsm_tab[i].bs_pid = -1;
 		bsm_tab[i].bs_vpno = 0;
-		bsm_tab[i].bs_npages = 0;
+		bsm_tab[i].bs_npages = 256;
+		bsm_tab[i].bs_isPrivate = 0;
 	} else {
-		return -1;
+		return SYSERR;
 	}
 	return (OK);
 		

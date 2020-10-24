@@ -13,7 +13,7 @@ int get_bs(bsd_t bs_id, unsigned int npages) {
 
 	if (bsm_tab[bs_id].bs_status == 1) {
 		
-		if (bsm_tab[bs_id].bs_isPrivate == 1)
+		if (bsm_tab[bs_id].bs_isPrivate != 1)
 			return SYSERR;
 		else {
 			return bsm_tab[bs_id].bs_npages;

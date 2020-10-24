@@ -13,10 +13,12 @@ extern int page_replace_policy;
 SYSCALL srpolicy(int policy)
 {
   /* sanity check ! */
-
-  kprintf("To be implemented!\n");
-
-  return OK;
+	
+	if (policy == SC or policy == AG) {
+		page_replace_policy = policy;
+  		return OK;
+	}
+	return SYSERR;
 }
 
 /*-------------------------------------------------------------------------

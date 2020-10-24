@@ -72,7 +72,7 @@ nulluser()				/* babysit CPU when no one is home */
         int userpid;
 
 	console_dev = SERIAL0;		/* set console to COM0 */
-
+	
 	initevec();
 
 	kprintf("system running up!\n");
@@ -135,7 +135,7 @@ sysinit()
 	SYSCALL pfintr();
 	kprintf("check if the init_frm() needs to be called with 'SYSCALL'\n");
 	init_frm();
-	
+	init_bsm();	
 
 	
 	// creating global page tables
@@ -154,13 +154,16 @@ sysinit()
 		frmPointer->fr_status = 1;
 		frmPointer->fr_type = FR_TBL;
 
-		while (j < 1024) {
+		while (j < NFRAMES) {
 			//check the logic and check the data type of currAddress
-			long currAddress = frmPointer + 4*j;
+			//frmPointer gives the address of the 
+			int currAddress = frmPointer + sizeof(pt_t)*j;
+			
 			struct pt_t *pageEntry = (pt_t*)currAddress;
 			pageEntry->pt_pres = 1;
 			pageEntry->pt_write = 1;
-			pageEntry->pt_base = globalPagePFN;
+			//check this logic
+			pageEntry->pt_base = globalPagePFN*NBPG;
 			j++;
 			globalPagePFN++;
 		}
@@ -242,15 +245,14 @@ sysinit()
 	framePointer->fr_pid = NULLPROC;
 	framePointer->fr_type = FR_DIR;
 	
-	
 	struct pd_t *ptr = (pd_t*) pptr->pdbr;
 	
-	int i = 0;
+	int i = 1;
 	while (i < 4) {
 		ptr->pd_pres = 1;
 		//pd_write = 1 means that the page is not writable
 		ptr->pd_write = 1;
-		ptr->pd_base = (i + 1024)*4096 + 1;
+		ptr->pd_base = (i + NFRAMES)*NBPG;
 		ptr++;
 		i++;
 		//check if other bits need to be set or not.
@@ -258,7 +260,6 @@ sysinit()
 	
 	kprintf("setting pdbr for the null proc in inirialize() (cr3 basically) \n\n");	
 	write_cr3(pptr->pdbr);
-	
 
 	currpid = NULLPROC;
 
