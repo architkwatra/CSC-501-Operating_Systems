@@ -75,7 +75,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 
 	
 	//Make the page directory for the current process
-	kprintf("Making the page directory for the new process in create \n\n");	
+	//kprintf("Making the page directory for the new process in create \n\n");	
 	int *freeFramePointer = 0;
 	if (get_frm(freeFramePointer) == SYSERR) {
                kill(getpid());
