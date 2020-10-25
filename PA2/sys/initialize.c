@@ -435,8 +435,9 @@ sysinit()
 
 	//My change,  basically setting the 31st bit of the cr0 register
 	set_evec(14, pfintr);
-	enable_paging();	
 	
+	enable_paging();	
+	kprintf("enable_paging FINISHED\n\n");	
 	return(OK);
 }
 
