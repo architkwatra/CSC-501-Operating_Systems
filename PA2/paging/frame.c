@@ -1,3 +1,7 @@
+
+
+
+
 /* frame.c - manage physical frames */
 #include <conf.h>
 #include <kernel.h>
@@ -124,8 +128,9 @@ SYSCALL get_frm(int* avail)
  */
 SYSCALL free_frm(int i)
 {
+
 	frm_tab[i].fr_status = 0;
-    frm_tab[i].fr_vpno = -1;
+    	frm_tab[i].fr_vpno = -1;
 	if (frm_tab[i].fr_dirty == 1)
 		writeDirtyFrame(i);
 	frm_tab[i].fr_pid = -1;

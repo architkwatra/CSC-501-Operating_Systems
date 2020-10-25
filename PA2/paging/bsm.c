@@ -18,6 +18,7 @@ SYSCALL init_bsm()
 		bsm_tab[i].bs_status = 0;
 		//check if this needs to be 256
 		bsm_tab[i].bs_npages = 256;
+		++i;
 	}
 }
 
@@ -34,6 +35,7 @@ SYSCALL get_bsm(int* avail)
 			*avail = i;
 			return OK;	
 		}
+		++i;
 	}
 	return -1;
 }
