@@ -369,7 +369,7 @@ sysinit()
 	init_frm();
 	init_bsm();	
 
-	
+
 	// creating global page tables
 	// check the logic for pageNumber
 	
@@ -379,32 +379,32 @@ sysinit()
 	int globalPagePFN = 0;
 	kprintf("Setting the global page tables\n");
 	while (i < 4) {
-		//i+1 is done because 1025th frame is used for the page table. 1024th frame is used for the page directory. frm_tab is the frame array 
+		//i+1 is done because 1025th frame is used for 
+		//the page table. 1024th frame is used for the 
+		//page directory. frm_tab is the frame array 
 		//each having 1024 entries
 		
 		frm_tab[i+1].fr_status = 1;
 		frm_tab[i+1].fr_type = FR_TBL;
 		frm_tab[i+1].fr_pid = NULLPROC;
 
+		pt_t *pageTableEntry = (FRAME0 + i + 1)*NBPG;
+
 		while (j < 1024) {
-			//check the logic and check the data type of currAddress
-			//frmPointer gives the address of the 
-			int currAddress = (FRAME0 + i)*NBPG + sizeof(pt_t)*j;
 			
-			pt_t *pageEntry = currAddress;
-			pageEntry->pt_pres = 1;
-			pageEntry->pt_write = 1;
-			pageEntry->pt_pwt = 0;
-			pageEntry->pt_user = 0;
-			pageEntry->pt_pcd = 0;
-			pageEntry->pt_dirty = 0;
-			pageEntry->pt_mbz = 0;
-			pageEntry->pt_global = 1;
-			pageEntry->pt_avail = 0;
+			pageTableEntry->pt_pres = 1;
+			pageTableEntry->pt_write = 1;
+			pageTableEntry->pt_pwt = 0;
+			pageTableEntry->pt_user = 0;
+			pageTableEntry->pt_pcd = 0;
+			pageTableEntry->pt_dirty = 0;
+			pageTableEntry->pt_mbz = 0;
+			pageTableEntry->pt_global = 1;
+			pageTableEntry->pt_avail = 0;
 			//check this logic
-			pageEntry->pt_base = i*FRAME0 + j;
+			pageTableEntry->pt_base = i*FRAME0 + j;
 			j++;
-			// globalPagePFN++;
+			pageTableEntry++;
 		}
 		i++;
 	}
@@ -439,7 +439,7 @@ sysinit()
 	set_evec(14, (u_long)pfintr);
 	kprintf("\nset_evec() called in initilize.c\n");
 	enable_paging();	
-	kprintf("enable_paging FINISHED\n\n");
+	kprintf("\nenable_paging FINISHED\n");
 	return(OK);
 }
 
