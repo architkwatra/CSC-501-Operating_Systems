@@ -301,10 +301,9 @@ sysinit()
 	while (i < 4) {
 		//i+1 is done because 1025th frame is used for the page table. 1024th frame is used for the page directory. frm_tab is the frame array 
 		//each having 1024 entries
-		fr_map_t *frmPointer = &frm_tab[i+1];
 		
-		frmPointer->fr_status = 1;
-		frmPointer->fr_type = FR_TBL;
+		frm_tab[i+1].fr_status = 1;
+		frm_tab[i+1].fr_type = FR_TBL;
 
 		while (j < 1024) {
 			//check the logic and check the data type of currAddress
@@ -319,22 +318,18 @@ sysinit()
 			j++;
 			globalPagePFN++;
 		}
-
 		i++;
 	}
 	
 
 	// adding pdbr for nulluser which is pointing at the 1024th frame/page
 	kprintf("Setting the page directory for the null process\n");
-	
-	fr_map_t *framePointer = pptr->pdbr = &frm_tab[0];
-	framePointer->fr_status = 1;
-	framePointer->fr_pid = NULLPROC;
-	framePointer->fr_type = FR_DIR;
+	frm_tab[0].fr_status = 1;
+	frm_tab[0].fr_pid = NULLPROC;
+	frm_tab[0].fr_type = FR_DIR;
 
 	//setting the pdbr for the NULL proc
 	pptr->pdbr = FRAME0*NBPG;
-
 	pd_t *ptr = pptr->pdbr;
 	
 	i = 1;
@@ -350,10 +345,7 @@ sysinit()
 	
 	write_cr3(pptr->pdbr);
 
-
-
-
-
+	kprintf("\nFINISHED NULLPROC PD and called write_cr3() register\n");
 
 	numproc = 0;			/* initialize system variables */
 	nextproc = NPROC-1;
