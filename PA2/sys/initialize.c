@@ -307,10 +307,10 @@ sysinit()
 		frmPointer->fr_status = 1;
 		frmPointer->fr_type = FR_TBL;
 
-		while (j < NFRAMES) {
+		while (j < 1024) {
 			//check the logic and check the data type of currAddress
 			//frmPointer gives the address of the 
-			int currAddress = frmPointer + sizeof(pt_t)*j;
+			int currAddress = (FRAME0 + i)*NBPG + sizeof(pt_t)*j;
 			
 			pt_t *pageEntry = currAddress;
 			pageEntry->pt_pres = 1;
