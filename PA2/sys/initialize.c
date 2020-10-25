@@ -77,7 +77,7 @@ int markPTENonExistent(int frameNumber) {
 	unsigned long ptNumber = vpn >> 10;
 	unsigned long pageNumber = (vpn << 10) >> 10;
 	pd_t *pdePtr = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
-	pt_t *ptePointer = (pt_t*) pdePtr->pd_base*4096 + sizeof(pt_t)*pageNumber;
+	pt_t *ptePointer = pdePtr->pd_base*4096 + sizeof(pt_t)*pageNumber;
 	ptePointer->pt_pres = 0;
 	
 	if (getpid() == frm_tab[frameNumber].fr_pid) {
