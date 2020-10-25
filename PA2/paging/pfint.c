@@ -43,10 +43,10 @@ SYSCALL pfint()
 		frm_tab[idx].fr_type = FR_TBL;
 		frm_tab[idx].fr_pid = getpid();
 		pdePtr->pd_pres = 1;
-		pdePtr->pd_base = framePointer;
+		pdePtr->pd_base = (int)framePointer/NBPG;
 	}
 
-	int idx = (pdePtr->pd_base)/NBPG - FRAME0;
+	int idx = pdePtr->pd_base - FRAME0;
 	frm_tab[idx].fr_refcnt++;
 	int *framePointer;
 	if (get_frm(framePointer) == SYSERR) {
@@ -82,10 +82,10 @@ SYSCALL pfint()
 
 	read_bs( (char*)framePointer, *store, *pageth);
 	
-	unsigned long pteAddress = pdePtr->pd_base + 4*pageNumber;
+	unsigned long pteAddress = pdePtr->pd_base*NBPG + 4*pageNumber;
  	pt_t *ptePtr = (pt_t*) pteAddress;
 	ptePtr->pt_pres = 1;
-	ptePtr->pt_base = framePointer;
+	ptePtr->pt_base = (int)framePointer/NBPG;
 	return OK;
 }
 

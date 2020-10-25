@@ -77,7 +77,7 @@ int markPTENonExistent(int frameNumber) {
 	unsigned long ptNumber = vpn >> 10;
 	unsigned long pageNumber = (vpn << 10) >> 10;
 	pd_t *pdePtr = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
-	pt_t *ptePointer = (pt_t*) pdePtr->pd_base + sizeof(pt_t)*pageNumber;
+	pt_t *ptePointer = (pt_t*) pdePtr->pd_base*4096 + sizeof(pt_t)*pageNumber;
 	ptePointer->pt_pres = 0;
 	
 	if (getpid() == frm_tab[frameNumber].fr_pid) {
@@ -101,7 +101,7 @@ int isAccSet(int idx) {
         unsigned long pdeAddress = pdbr + 4*ptNumber;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
 	
-	unsigned int pt =  pdePtr->pd_base;
+	unsigned int pt =  pdePtr->pd_base*NBPG;
 	pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
 	if (ptePointer->pt_acc == 0) {
 		return idx;
@@ -123,7 +123,7 @@ int markIfDirty(int idx) {
         unsigned long pdeAddress = pdbr + 4*ptNumber;
         pd_t *pdePtr = (pd_t*) pdeAddress;
 
-        unsigned int pt =  pdePtr->pd_base;
+        unsigned int pt =  pdePtr->pd_base*NBPG;
         pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
         if (ptePointer->pt_dirty == 1) {
 		frm_tab[idx].fr_dirty = 1;
@@ -316,7 +316,7 @@ sysinit()
 			pageEntry->pt_pres = 1;
 			pageEntry->pt_write = 1;
 			//check this logic
-			pageEntry->pt_base = globalPagePFN*NBPG;
+			pageEntry->pt_base = globalPagePFN;
 			j++;
 			globalPagePFN++;
 		}
@@ -343,7 +343,7 @@ sysinit()
 		ptr->pd_pres = 1;
 		//pd_write = 1 means that the page is not writable
 		ptr->pd_write = 1;
-		ptr->pd_base = (i + FRAME0)*NBPG;
+		ptr->pd_base = (i + FRAME0);
 		ptr++;
 		i++;
 		//check if other bits need to be set or not.
