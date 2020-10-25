@@ -285,82 +285,6 @@ sysinit()
 	struct	sentry	*sptr;
 	struct	mblock	*mptr;
 	SYSCALL pfintr();
-	kprintf("check if the init_frm() needs to be called with 'SYSCALL'\n");
-	init_frm();
-	init_bsm();	
-
-	
-	// creating global page tables
-	// check the logic for pageNumber
-	
-	i = 0;
-	j = 0;
-	//int pageNumber: 20;
-	int globalPagePFN = 0;
-	kprintf("Setting the global page tables\n");
-	while (i < 4) {
-		//i+1 is done because 1025th frame is used for the page table. 1024th frame is used for the page directory. frm_tab is the frame array 
-		//each having 1024 entries
-		
-		frm_tab[i+1].fr_status = 1;
-		frm_tab[i+1].fr_type = FR_TBL;
-		frm_tab[i+1].fr_pid = NULLPROC;
-
-		while (j < 1024) {
-			//check the logic and check the data type of currAddress
-			//frmPointer gives the address of the 
-			int currAddress = (FRAME0 + i)*NBPG + sizeof(pt_t)*j;
-			
-			pt_t *pageEntry = currAddress;
-			pageEntry->pt_pres = 1;
-			pageEntry->pt_write = 1;
-			pageEntry->pt_pwt = 0;
-			pageEntry->pt_user = 0;
-			pageEntry->pt_pcd = 0;
-			pageEntry->pt_dirty = 0;
-			pageEntry->pt_mbz = 0;
-			pageEntry->pt_global = 1;
-			pageEntry->pt_avail = 0;
-			//check this logic
-			pageEntry->pt_base = i*FRAME0 + j;
-			j++;
-			// globalPagePFN++;
-		}
-		i++;
-	}
-	
-
-	// adding pdbr for nulluser which is pointing at the 1024th frame/page
-	kprintf("Setting the page directory for the null process\n");
-	
-	proctab[NULLPROC].pdbr = FRAME0*NBPG;
-
-	frm_tab[0].fr_status = 1;
-	frm_tab[0].fr_pid = NULLPROC;
-	frm_tab[0].fr_type = FR_DIR;
-	
-	//setting the pdbr for the NULL proc
-	pptr->pdbr = FRAME0*NBPG;
-	pd_t *ptr = pptr->pdbr;
-	
-	i = 1;
-	while (i < 5) {
-		ptr->pd_pres = 1;
-		//pd_write = 1 means that the page is not writable
-		ptr->pd_write = 1;
-		ptr->pd_base = (i + FRAME0);
-		ptr++;
-		i++;
-		//check if other bits need to be set or not.
-	}
-	
-	write_cr3(proctab[NULLPROC].pdbr);
-	kprintf("\nFINISHED NULLPROC PD and called write_cr3() register in initialize.c\n");
-	set_evec(14, (u_long)pfintr);
-	kprintf("\nset_evec() called in initilize.c\n");
-	enable_paging();	
-	kprintf("enable_paging FINISHED\n\n");
-
 
 	numproc = 0;			/* initialize system variables */
 	nextproc = NPROC-1;
@@ -438,6 +362,84 @@ sysinit()
 	}
 
 	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */	
+	
+	
+
+	kprintf("check if the init_frm() needs to be called with 'SYSCALL'\n");
+	init_frm();
+	init_bsm();	
+
+	
+	// creating global page tables
+	// check the logic for pageNumber
+	
+	i = 0;
+	j = 0;
+	//int pageNumber: 20;
+	int globalPagePFN = 0;
+	kprintf("Setting the global page tables\n");
+	while (i < 4) {
+		//i+1 is done because 1025th frame is used for the page table. 1024th frame is used for the page directory. frm_tab is the frame array 
+		//each having 1024 entries
+		
+		frm_tab[i+1].fr_status = 1;
+		frm_tab[i+1].fr_type = FR_TBL;
+		frm_tab[i+1].fr_pid = NULLPROC;
+
+		while (j < 1024) {
+			//check the logic and check the data type of currAddress
+			//frmPointer gives the address of the 
+			int currAddress = (FRAME0 + i)*NBPG + sizeof(pt_t)*j;
+			
+			pt_t *pageEntry = currAddress;
+			pageEntry->pt_pres = 1;
+			pageEntry->pt_write = 1;
+			pageEntry->pt_pwt = 0;
+			pageEntry->pt_user = 0;
+			pageEntry->pt_pcd = 0;
+			pageEntry->pt_dirty = 0;
+			pageEntry->pt_mbz = 0;
+			pageEntry->pt_global = 1;
+			pageEntry->pt_avail = 0;
+			//check this logic
+			pageEntry->pt_base = i*FRAME0 + j;
+			j++;
+			// globalPagePFN++;
+		}
+		i++;
+	}
+	
+
+	// adding pdbr for nulluser which is pointing at the 1024th frame/page
+	kprintf("Setting the page directory for the null process\n");
+	
+	proctab[NULLPROC].pdbr = FRAME0*NBPG;
+
+	frm_tab[0].fr_status = 1;
+	frm_tab[0].fr_pid = NULLPROC;
+	frm_tab[0].fr_type = FR_DIR;
+	
+	//setting the pdbr for the NULL proc
+	pptr->pdbr = FRAME0*NBPG;
+	pd_t *ptr = pptr->pdbr;
+	
+	i = 1;
+	while (i < 5) {
+		ptr->pd_pres = 1;
+		//pd_write = 1 means that the page is not writable
+		ptr->pd_write = 1;
+		ptr->pd_base = (i + FRAME0);
+		ptr++;
+		i++;
+		//check if other bits need to be set or not.
+	}
+	
+	write_cr3(proctab[NULLPROC].pdbr);
+	kprintf("\nFINISHED NULLPROC PD and called write_cr3() register in initialize.c\n");
+	set_evec(14, (u_long)pfintr);
+	kprintf("\nset_evec() called in initilize.c\n");
+	enable_paging();	
+	kprintf("enable_paging FINISHED\n\n");
 	return(OK);
 }
 
