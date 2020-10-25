@@ -379,6 +379,13 @@ sysinit()
 	//int pageNumber: 20;
 	int globalPagePFN = 0;
 	kprintf("Setting the global page tables\n");
+	for (i=0; i<20; ++i) {
+		kprintf("frm_tab number = %d", i);
+		kprintf("\nfrm_tab[i].fr_status = %d, frm_tab[i].fr_pid = %d, frm_tab[i].fr_type = %d\n", frm_tab[i].fr_status, frm_tab[i].fr_pid, frm_tab[i].fr_type);
+	}
+	kprintf("\nXXXXXXXXXXXXXXXXXXXXXXXX\n");
+	i = 0;
+	j = 0;
 	while (i < 4) {
 		//i+1 is done because 1025th frame is used for 
 		//the page table. 1024th frame is used for the 
