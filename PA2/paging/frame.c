@@ -8,7 +8,7 @@
  * init_frm - initialize frm_tab
  *-------------------------------------------------------------------------
  */
-static unsigned long *eax;
+
 SYSCALL init_frm()
 {	
 	
@@ -123,129 +123,6 @@ SYSCALL get_frm(int* avail)
 	
 	return SYSERR;
 }
-
-int markPTENonExistent(int frameNumber) {
-
-	int vpn = frm_tab[frameNumber].fr_vpno;
-	unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
-	unsigned long ptNumber = vpn >> 10;
-	unsigned long pageNumber = (vpn << 10) >> 10;
-	pd_t *pdePtr = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
-	pt_t *ptePointer = (pt_t*) pdePtr->pd_base + sizeof(pt_t)*pageNumber;
-	ptePointer->pt_pres = 0;
-	
-	if (getpid() == frm_tab[frameNumber].fr_pid) {
-		//static unsigned long *eax;
-		eax = vpn*NBPG;
-		asm("invlpg eax");	
-	}
-	
-	--frm_tab[frameNumber].fr_refcnt;
-	if (frm_tab[frameNumber].fr_refcnt == 0)
-		pdePtr->pd_pres = 0; 
-	return OK;
-}
-
-int isAccSet(int idx) {
-	int vpn = frm_tab[idx].fr_vpno;
-	
-	unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vpn>>10;
-        unsigned long pageNumber = (vpn<<10)>>10;
-	
-        unsigned long pdeAddress = pdbr + 4*ptNumber;
-	pd_t *pdePtr = (pd_t*) pdeAddress;
-	
-	unsigned int pt =  pdePtr->pd_base;
-	pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
-	if (ptePointer->pt_acc == 0) {
-		return idx;
-	}
-	
-	ptePointer->pt_acc = 0;
-	return -1;
-	
-}
-
-
-int markIfDirty(int idx) {
-        int vpn = frm_tab[idx].fr_vpno;
-
-        unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vpn>>10;
-        unsigned long pageNumber = (vpn<<10)>>10;
-
-        unsigned long pdeAddress = pdbr + 4*ptNumber;
-        pd_t *pdePtr = (pd_t*) pdeAddress;
-
-        unsigned int pt =  pdePtr->pd_base;
-        pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
-        if (ptePointer->pt_dirty == 1) {
-		frm_tab[idx].fr_dirty = 1;
-        }
-	else
-		frm_tab[idx].fr_dirty = 0;
-
-        return OK;
-
-}
-
-
-int writeBackDirtyFrames(int pid) {
-
-	int i = 0;
-	for (; i < NFRAMES; i++) {
-		markIfDirty(i);
-		if (frm_tab[i].fr_pid == pid && frm_tab[i].fr_dirty == 1) {
-			if (writeDirtyFrame(i) == SYSERR) {
-				return SYSERR;
-			}
-		}
-	}
-	return OK;
-}
-
-
-int writeDirtyFrame(int i) {
-
-		int *store, *pageth; 
-                if (bsm_lookup(frm_tab[i].fr_pid, frm_tab[i].fr_vpno*NBPG /*(vaddr)*/, store, pageth) == SYSERR) {
-                        kill(frm_tab[i].fr_pid);
-                        return SYSERR;
-                }   
-                char *pointerToSrc = (FRAME0 + i)*NBPG;
-                write_bs(pointerToSrc, *store, *pageth);
-                
-                frm_tab[i].fr_dirty = 0;
-		return OK;
-}
-
-
-int removeFramesOnKill(int pid) {
-
-	struct scq *p = &scqhead;
-	struct scq *q = p->next;
-	
-	while (1) {
-		if (q == &scqhead) {
-			return OK;
-		}
-
-		if (frm_tab[q->idx].fr_pid == pid) {
-			q = q->next;
-			p->next = q;
-		}
-		else {
-			p = p->next;
-			q = q->next;
-		}
-
-		
-	}
-	return SYSERR;
-
-}
-
 
 /*-------------------------------------------------------------------------
  * free_frm - free a frame 

@@ -84,7 +84,9 @@ int	resched()
 #endif
 	kprintf("setting the cr3 register with the pdbr for the current process \n\n");
 	writeBackDirtyFrames(currpid);
+	kprintf("WRITTEN the dirty frame before setting the cr3 register\n\n");
 	write_cr3(nptr->pdbr);	
+	kprintf("written the cr3 register \n\n");
 	ctxsw(&optr->pesp, optr->pirmask, &nptr->pesp, nptr->pirmask);
 
 #ifdef	DEBUG

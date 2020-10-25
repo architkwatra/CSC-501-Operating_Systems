@@ -98,6 +98,16 @@ extern struct scq *scPointer;
 
 
 
+int markPTENonExistent(int);
+int removeFramesOnKill(int); 
+int writeDirtyFrame(int); 
+int writeBackDirtyFrames(int);
+int markIfDirty(int); 
+int isAccSet(int);
+
+
+
+
 
 //make extern if required
 int markIfDirty(int);
