@@ -445,12 +445,11 @@ sysinit()
 	}
 	
 
-	kprintf("Setting the global page tables\n");
-	for (i=0; i<20; ++i) {
-		kprintf("\nfrm_tab[i].fr_status = %d, frm_tab[i].fr_pid = %d, frm_tab[i].fr_type = %d\n", frm_tab[i].fr_status, frm_tab[i].fr_pid, frm_tab[i].fr_type);
-	}
-	kprintf("\nXXXXXXXXXXXXXXXXXXXXXXXX\n");
-
+	ptr = proctab[NULLPROC].pdbr;
+	for (i = 0; i < 4; ++i) {
+			
+			kprinf("for i = %d, pd_pres = %d, pd_base = %d", i, ptr->pd_pres, ptr->pd_base);
+		}
 
 	write_cr3(proctab[NULLPROC].pdbr);
 	kprintf("\nFINISHED NULLPROC PD and called write_cr3() register in initialize.c\n");
