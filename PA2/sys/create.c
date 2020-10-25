@@ -134,7 +134,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	*pushsp = pptr->pesp = (unsigned long)saddr;
 
 	restore(ps);
-
+	kprintf("\nProcess cretaed with PID = %d\n", pid);
 	return(pid);
 }
 
