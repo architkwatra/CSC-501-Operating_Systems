@@ -420,22 +420,25 @@ sysinit()
 	// adding pdbr for nulluser which is pointing at the 1024th frame/page
 	kprintf("Setting the page directory for the null process\n");
 	
-	proctab[NULLPROC].pdbr = FRAME0*NBPG;
+	pd_t *ptr = proctab[NULLPROC].pdbr = FRAME0*NBPG;
 
 	frm_tab[0].fr_status = 1;
 	frm_tab[0].fr_pid = NULLPROC;
 	frm_tab[0].fr_type = FR_DIR;
 	
 	//setting the pdbr for the NULL proc
-	pptr->pdbr = FRAME0*NBPG;
-	pd_t *ptr = pptr->pdbr;
+	// pptr->pdbr = FRAME0*NBPG;
 	
-	i = 1;
-	while (i < 5) {
-		ptr->pd_pres = 1;
-		//pd_write = 1 means that the page is not writable
+	i = 0;
+	while (i < 1024) {
+		
 		ptr->pd_write = 1;
-		ptr->pd_base = (i + FRAME0);
+		if (i < 4) {
+			ptr->pd_pres = 1;
+			// (i + FRAME0 + 1) = 1024 + i(=0) + 1 = 1025 
+			ptr->pd_base = (i + FRAME0 + 1);
+		}
+		
 		ptr++;
 		i++;
 		//check if other bits need to be set or not.
