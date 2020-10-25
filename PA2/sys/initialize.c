@@ -354,9 +354,13 @@ sysinit()
 		//check if other bits need to be set or not.
 	}
 	
-	write_cr3(pptr->pdbr);
-
+	write_cr3(proctab[NULLPROC].pdbr);
 	kprintf("\nFINISHED NULLPROC PD and called write_cr3() register in initialize.c\n");
+	set_evec(14, (u_long)pfintr);
+	kprintf("\nset_evec() called in initilize.c\n");
+	enable_paging();	
+	kprintf("enable_paging FINISHED\n\n");
+
 
 	numproc = 0;			/* initialize system variables */
 	nextproc = NPROC-1;
@@ -433,14 +437,7 @@ sysinit()
 		sptr->sqtail = 1 + (sptr->sqhead = newqueue());
 	}
 
-	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */
-
-	//My change,  basically setting the 31st bit of the cr0 register
-	set_evec(14, pfintr);
-	kprintf("\nset_evec() called in initilize.c\n");
-	enable_paging();	
-	write_cr3(proctab[NULLPROC].pdbr);
-	kprintf("enable_paging FINISHED\n\n");	
+	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */	
 	return(OK);
 }
 
