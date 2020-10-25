@@ -345,7 +345,7 @@ sysinit()
 	
 	write_cr3(pptr->pdbr);
 
-	kprintf("\nFINISHED NULLPROC PD and called write_cr3() register\n");
+	kprintf("\nFINISHED NULLPROC PD and called write_cr3() register in initialize.c\n");
 
 	numproc = 0;			/* initialize system variables */
 	nextproc = NPROC-1;
@@ -426,7 +426,7 @@ sysinit()
 
 	//My change,  basically setting the 31st bit of the cr0 register
 	set_evec(14, pfintr);
-	
+	kprintf("\nset_evec() called in initilize.c\n");
 	enable_paging();	
 	kprintf("enable_paging FINISHED\n\n");	
 	return(OK);
