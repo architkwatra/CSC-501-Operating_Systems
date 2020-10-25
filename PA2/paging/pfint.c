@@ -14,8 +14,8 @@ SYSCALL pfint()
 
 	//might need to interrupt
 	unsigned long faultingPage = read_cr2();
-	int *store, *pageth;
-	if (bsm_lookup(getpid(), faultingPage, store, pageth) == SYSERR) {
+	int store, pageth;
+	if (bsm_lookup(getpid(), faultingPage, &store, &pageth) == SYSERR) {
 		// kill(getpid());
 		return SYSERR;
 	}	
@@ -79,7 +79,7 @@ SYSCALL pfint()
 		fifohead.next = &frameToInsert;
 	}
 
-	read_bs( (char*)framePointer, *store, *pageth);
+	read_bs( (char*)framePointer, &store, &pageth);
 	
 	unsigned long pteAddress = pdePtr->pd_base*NBPG + 4*pageNumber;
  	pt_t *ptePtr = (pt_t*) pteAddress;

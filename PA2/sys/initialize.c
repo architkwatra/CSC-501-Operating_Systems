@@ -151,16 +151,15 @@ int writeBackDirtyFrames(int pid) {
 	return OK;
 }
 
-
 int writeDirtyFrame(int i) {
 
-		int *store, *pageth; 
-                if (bsm_lookup(frm_tab[i].fr_pid, frm_tab[i].fr_vpno*NBPG /*(vaddr)*/, store, pageth) == SYSERR) {
+		int store, pageth; 
+                if (bsm_lookup(frm_tab[i].fr_pid, frm_tab[i].fr_vpno*NBPG /*(vaddr)*/, &store, &pageth) == SYSERR) {
                         kill(frm_tab[i].fr_pid);
                         return SYSERR;
                 }   
                 char *pointerToSrc = (FRAME0 + i)*NBPG;
-                write_bs(pointerToSrc, *store, *pageth);
+                write_bs(pointerToSrc, &store, &pageth);
                 
                 frm_tab[i].fr_dirty = 0;
 		return OK;
