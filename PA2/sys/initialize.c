@@ -304,6 +304,7 @@ sysinit()
 		
 		frm_tab[i+1].fr_status = 1;
 		frm_tab[i+1].fr_type = FR_TBL;
+		frm_tab[i+1].fr_pid = NULLPROC;
 
 		while (j < 1024) {
 			//check the logic and check the data type of currAddress
@@ -313,10 +314,17 @@ sysinit()
 			pt_t *pageEntry = currAddress;
 			pageEntry->pt_pres = 1;
 			pageEntry->pt_write = 1;
+			pageEntry->pt_pwt = 0;
+			pageEntry->pt_user = 0;
+			pageEntry->pt_pcd = 0;
+			pageEntry->pt_dirty = 0;
+			pageEntry->pt_mbz = 0;
+			pageEntry->pt_global = 1;
+			pageEntry->pt_avail = 0;
 			//check this logic
-			pageEntry->pt_base = globalPagePFN;
+			pageEntry->pt_base = i*FRAME0 + j;
 			j++;
-			globalPagePFN++;
+			// globalPagePFN++;
 		}
 		i++;
 	}
@@ -324,10 +332,13 @@ sysinit()
 
 	// adding pdbr for nulluser which is pointing at the 1024th frame/page
 	kprintf("Setting the page directory for the null process\n");
+	
+	proctab[NULLPROC].pdbr = FRAME0*NBPG;
+
 	frm_tab[0].fr_status = 1;
 	frm_tab[0].fr_pid = NULLPROC;
 	frm_tab[0].fr_type = FR_DIR;
-
+	
 	//setting the pdbr for the NULL proc
 	pptr->pdbr = FRAME0*NBPG;
 	pd_t *ptr = pptr->pdbr;
@@ -428,6 +439,7 @@ sysinit()
 	set_evec(14, pfintr);
 	kprintf("\nset_evec() called in initilize.c\n");
 	enable_paging();	
+	write_cr3(proctab[NULLPROC].pdbr);
 	kprintf("enable_paging FINISHED\n\n");	
 	return(OK);
 }
