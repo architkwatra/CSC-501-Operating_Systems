@@ -15,7 +15,6 @@
 
 SYSCALL init_frm()
 {		
-	fr_map_t frm_tab[NFRAMES];
 	//now I don't need this.
 	fr_map_t *ptr = NFRAMES*NBPG;
 	int i = 0;

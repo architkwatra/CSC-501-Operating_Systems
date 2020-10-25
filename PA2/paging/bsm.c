@@ -11,7 +11,6 @@
  */
 SYSCALL init_bsm()
 {
-	bs_map_t bsm_tab[8];
 	 int i = 0;
         while (i < 8) {
 		//check if any other variables need to be set

@@ -36,8 +36,8 @@ struct	mblock	memlist;	/* list of free memory blocks		*/
 
 
 struct scq scqhead;
-//scqhead.next = NULL;
 struct scq *scPointer = &scqhead;
+//scPointer->next = NULL;
 struct fifo fifohead;
 
 bs_map_t bsm_tab[8];
@@ -70,9 +70,6 @@ int frm = 0;
 
 static unsigned long *eax;
 
-
-
-
 int markPTENonExistent(int frameNumber) {
 
 	int vpn = frm_tab[frameNumber].fr_vpno;
@@ -101,7 +98,6 @@ int isAccSet(int idx) {
 	unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
         unsigned long ptNumber = vpn>>10;
         unsigned long pageNumber = (vpn<<10)>>10;
-	
         unsigned long pdeAddress = pdbr + 4*ptNumber;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
 	
@@ -188,9 +184,7 @@ int removeFramesOnKill(int pid) {
 		else {
 			p = p->next;
 			q = q->next;
-		}
-
-		
+		}		
 	}
 	return SYSERR;
 
@@ -330,6 +324,38 @@ sysinit()
 		i++;
 	}
 	
+
+	// adding pdbr for nulluser which is pointing at the 1024th frame/page
+	kprintf("Setting the page directory for the null process\n");
+	
+	fr_map_t *framePointer = pptr->pdbr = &frm_tab[0];
+	framePointer->fr_status = 1;
+	framePointer->fr_pid = NULLPROC;
+	framePointer->fr_type = FR_DIR;
+
+	//setting the pdbr for the NULL proc
+	pptr->pdbr = FRAME0*NBPG;
+
+	pd_t *ptr = (pd_t*) pptr->pdbr;
+	
+	i = 1;
+	while (i < 5) {
+		ptr->pd_pres = 1;
+		//pd_write = 1 means that the page is not writable
+		ptr->pd_write = 1;
+		ptr->pd_base = (i + FRAME0)*NBPG;
+		ptr++;
+		i++;
+		//check if other bits need to be set or not.
+	}
+	
+	write_cr3(pptr->pdbr);
+
+
+
+
+
+
 	numproc = 0;			/* initialize system variables */
 	nextproc = NPROC-1;
 	nextsem = NSEM-1;
@@ -396,28 +422,7 @@ sysinit()
 	pptr->pargs = 0;
 	pptr->pprio = 0;
 
-	// adding pdbr for nulluser which is pointing at the 1024th frame/page
-	kprintf("Setting the page directory for the null process\n");
 	
-	fr_map_t *framePointer = pptr->pdbr = &frm_tab[0];
-	framePointer->fr_status = 1;
-	framePointer->fr_pid = NULLPROC;
-	framePointer->fr_type = FR_DIR;
-	
-	pd_t *ptr = (pd_t*) pptr->pdbr;
-	
-	i = 1;
-	while (i < 4) {
-		ptr->pd_pres = 1;
-		//pd_write = 1 means that the page is not writable
-		ptr->pd_write = 1;
-		ptr->pd_base = (i + NFRAMES)*NBPG;
-		ptr++;
-		i++;
-		//check if other bits need to be set or not.
-	}
-	
-	write_cr3(pptr->pdbr);
 
 	currpid = NULLPROC;
 
