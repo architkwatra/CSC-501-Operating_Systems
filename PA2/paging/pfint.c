@@ -4,6 +4,7 @@
 #include <kernel.h>
 #include <paging.h>
 
+int i = 0;
 
 /*-------------------------------------------------------------------------
  * pfint - paging fault ISR
@@ -11,7 +12,9 @@
  */
 SYSCALL pfint()
 {
-
+	i++;
+	if (i >= 20)
+		return;
 	//might need to interrupt
 	kprintf("\n0000000000000\n");
 	unsigned long faultingPage = read_cr2();
