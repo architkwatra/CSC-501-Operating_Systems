@@ -25,7 +25,6 @@ SYSCALL pfint()
 	unsigned long ptNumber = faultingPage>>22;
 	unsigned long pageNumber = (faultingPage & 0x3FF000)>>12;
 	unsigned long offset = (faultingPage<<20)>>20;
-	kprintf("\nVirtual Page Translation\n");
 	unsigned long pdeAddress = pdbrCurrentProcess + 4*ptNumber;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
 	int framePointer;
@@ -85,6 +84,7 @@ SYSCALL pfint()
  	pt_t *ptePtr = (pt_t*) pteAddress;
 	ptePtr->pt_pres = 1;
 	ptePtr->pt_base = (int)framePointer/NBPG;
+	kprintf("\nRETURNING FROM PFINT.c\n");
 	return OK;
 }
 
