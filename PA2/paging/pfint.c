@@ -20,7 +20,7 @@ SYSCALL pfint()
 	unsigned long faultingPage = read_cr2();
 	int store, pageth;
 	int temp = bsm_lookup(getpid(), faultingPage, &store, &pageth);
-	kprintf("temp from bsm_lookup = %d", temp);
+	kprintf("temp from bsm_lookup = %d and faulting page = %lu", temp, faultingPage);
 	if (temp == SYSERR) {
 		// kill(getpid());
 		kprintf("\nBSM LOOKUP FAILED\n");
