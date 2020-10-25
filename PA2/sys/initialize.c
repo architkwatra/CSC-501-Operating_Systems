@@ -448,7 +448,7 @@ sysinit()
 	ptr = proctab[NULLPROC].pdbr;
 	for (i = 0; i < 4; ++i) {
 			
-			kprinf("for i = %d, pd_pres = %d, pd_base = %d", i, ptr->pd_pres, ptr->pd_base);
+			kprintf("for i = %d, pd_pres = %d, pd_base = %d", i, ptr->pd_pres, ptr->pd_base);
 		}
 
 	write_cr3(proctab[NULLPROC].pdbr);
