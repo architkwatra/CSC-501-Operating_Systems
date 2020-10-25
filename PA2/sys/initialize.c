@@ -60,8 +60,8 @@ char 	vers[80];
 int	console_dev;		/* the console device			*/
 
 /*  added for the demand paging */
-int page_replace_policy = SC;
-
+// int page_replace_policy = SC;
+int page_replace_policy = AGING;
 
 int frm = 0;
 
