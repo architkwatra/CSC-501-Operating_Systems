@@ -417,7 +417,6 @@ sysinit()
 		//check if other bits need to be set or not.
 	}
 	
-	kprintf("setting pdbr for the null proc in inirialize() (cr3 basically) \n\n");	
 	write_cr3(pptr->pdbr);
 
 	currpid = NULLPROC;
@@ -430,7 +429,6 @@ sysinit()
 	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */
 
 	//My change,  basically setting the 31st bit of the cr0 register
-	kprintf("calling the set_evec() in initilize.c and enable_paging()\n\n");
 	set_evec(14, pfintr);
 	enable_paging();	
 	

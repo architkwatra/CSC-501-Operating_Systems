@@ -10,14 +10,10 @@
  */
 
 SYSCALL init_frm()
-{	
-	
-	kprintf("Declaring the page_frames array for all the frames\n");
-	
+{		
 	fr_map_t frm_tab[NFRAMES];
 	//now I don't need this.
 	fr_map_t *ptr = NFRAMES*NBPG;
-	kprintf("The first frame will be pointing at ptr. Also check the assigning of the fr_status\n");
 	int i = 0;
 	while (i < NFRAMES) {
 		//frm_tab[i] = ptr;
@@ -55,8 +51,6 @@ SYSCALL get_frm(int* avail)
 		}
 		i++;
 	}
-
-	
 	
 	//extern struct scPolicyStruct scHead;
 	//extern struct agingPolicyStruct agingHead;
@@ -130,7 +124,6 @@ SYSCALL get_frm(int* avail)
  */
 SYSCALL free_frm(int i)
 {
-	kprintf("PAGE REPLACED = %d", i);
 	frm_tab[i].fr_status = 0;
     frm_tab[i].fr_vpno = -1;
 	if (frm_tab[i].fr_dirty == 1)
