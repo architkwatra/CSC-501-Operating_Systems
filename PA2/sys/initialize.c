@@ -379,11 +379,10 @@ sysinit()
 	//int pageNumber: 20;
 	int globalPagePFN = 0;
 	kprintf("Setting the global page tables\n");
-	for (i=0; i<20; ++i) {
-		kprintf("frm_tab number = %d", i);
-		kprintf("\nfrm_tab[i].fr_status = %d, frm_tab[i].fr_pid = %d, frm_tab[i].fr_type = %d\n", frm_tab[i].fr_status, frm_tab[i].fr_pid, frm_tab[i].fr_type);
-	}
-	kprintf("\nXXXXXXXXXXXXXXXXXXXXXXXX\n");
+	// for (i=0; i<20; ++i) {
+	// 	kprintf("\nfrm_tab[i].fr_status = %d, frm_tab[i].fr_pid = %d, frm_tab[i].fr_type = %d\n", frm_tab[i].fr_status, frm_tab[i].fr_pid, frm_tab[i].fr_type);
+	// }
+	// kprintf("\nXXXXXXXXXXXXXXXXXXXXXXXX\n");
 	i = 0;
 	j = 0;
 	while (i < 4) {
@@ -442,6 +441,14 @@ sysinit()
 		//check if other bits need to be set or not.
 	}
 	
+
+	kprintf("Setting the global page tables\n");
+	for (i=0; i<20; ++i) {
+		kprintf("\nfrm_tab[i].fr_status = %d, frm_tab[i].fr_pid = %d, frm_tab[i].fr_type = %d\n", frm_tab[i].fr_status, frm_tab[i].fr_pid, frm_tab[i].fr_type);
+	}
+	kprintf("\nXXXXXXXXXXXXXXXXXXXXXXXX\n");
+
+
 	write_cr3(proctab[NULLPROC].pdbr);
 	kprintf("\nFINISHED NULLPROC PD and called write_cr3() register in initialize.c\n");
 	set_evec(14, (u_long)pfintr);
