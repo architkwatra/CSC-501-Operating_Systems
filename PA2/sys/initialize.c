@@ -312,7 +312,7 @@ sysinit()
 			//frmPointer gives the address of the 
 			int currAddress = frmPointer + sizeof(pt_t)*j;
 			
-			pt_t *pageEntry = (pt_t*)currAddress;
+			pt_t *pageEntry = currAddress;
 			pageEntry->pt_pres = 1;
 			pageEntry->pt_write = 1;
 			//check this logic
@@ -336,7 +336,7 @@ sysinit()
 	//setting the pdbr for the NULL proc
 	pptr->pdbr = FRAME0*NBPG;
 
-	pd_t *ptr = (pd_t*) pptr->pdbr;
+	pd_t *ptr = pptr->pdbr;
 	
 	i = 1;
 	while (i < 5) {
