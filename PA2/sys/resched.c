@@ -83,8 +83,10 @@ int	resched()
 	PrintSaved(nptr);
 #endif
 	writeBackDirtyFrames(currpid);
-	write_cr3(nptr->pdbr);	
+	write_cr3((u_long)nptr->pdbr);	
+	kprintf("entering ctxsw\n");
 	ctxsw(&optr->pesp, optr->pirmask, &nptr->pesp, nptr->pirmask);
+	kprintf("exiting ctxsw\n");
 
 #ifdef	DEBUG
 	PrintSaved(nptr);
