@@ -16,7 +16,7 @@ SYSCALL pfint()
 	unsigned long faultingPage = read_cr2();
 	int *store, *pageth;
 	if (bsm_lookup(getpid(), faultingPage, store, pageth) == SYSERR) {
-		kill(getpid());
+		// kill(getpid());
 		return SYSERR;
 	}	
 
@@ -28,14 +28,14 @@ SYSCALL pfint()
 	kprintf("\nVirtual Page Translation\n");
 	unsigned long pdeAddress = pdbrCurrentProcess + 4*ptNumber;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
-	
+	int framePointer;
 	if (pdePtr->pd_pres == 0) {
 		//create new page table for process
 		//mark pd_pres = 1
 		//add location of pt to pd_base
-		int framePointer;
+		
 		if (get_frm(&framePointer) == SYSERR) {
- 	             	kill(getpid());
+ 	             	// kill(getpid());
                  	return SYSERR;
 	        }
 		int idx = (framePointer)/NBPG - FRAME0;
@@ -48,9 +48,8 @@ SYSCALL pfint()
 
 	int idx = pdePtr->pd_base - FRAME0;
 	frm_tab[idx].fr_refcnt++;
-	int *framePointer;
-	if (get_frm(framePointer) == SYSERR) {
-		kill(getpid());
+	if (get_frm(&framePointer) == SYSERR) {
+		// kill(getpid());
 		return SYSERR;
 	}
 	idx = (int)(framePointer)/NBPG - FRAME0;

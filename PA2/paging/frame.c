@@ -126,7 +126,7 @@ SYSCALL get_frm(int* avail)
  */
 SYSCALL free_frm(int i)
 {
-
+	kprintf("\nInside free_frm()\n");
 	frm_tab[i].fr_status = 0;
     	frm_tab[i].fr_vpno = -1;
 	if (frm_tab[i].fr_dirty == 1)

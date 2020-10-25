@@ -78,7 +78,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	//kprintf("Making the page directory for the new process in create \n\n");	
 	int *freeFramePointer = 0;
 	if (get_frm(freeFramePointer) == SYSERR) {
-               kill(getpid());
+            //    kill(getpid());
                return SYSERR;
         }
 	int frameId = ((int)freeFramePointer)/NBPG - FRAME0;
