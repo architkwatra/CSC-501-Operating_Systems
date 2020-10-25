@@ -44,19 +44,20 @@ SYSCALL pfint()
 		pdePtr->pd_pres = 1;
 		pdePtr->pd_base = (int)framePointer/NBPG;
 	}
-
+	kprintf("\n1111111111111111\n");
 	int idx = pdePtr->pd_base - FRAME0;
 	frm_tab[idx].fr_refcnt++;
 	if (get_frm(&framePointer) == SYSERR) {
 		// kill(getpid());
 		return SYSERR;
 	}
+	kprintf("\2222222222222222222\n");
 	idx = (int)(framePointer)/NBPG - FRAME0;
 	frm_tab[idx].fr_status = 1;
 	frm_tab[idx].fr_type = FR_PAGE;
 	frm_tab[idx].fr_pid = getpid();
 	frm_tab[idx].fr_vpno = vp;
-
+	kprintf("\n33333333333333\n");
 	// do we need to update ref_cnt here???!?
 	if (grpolicy() != AGING) {
 		struct scq frameToInsert;
@@ -68,6 +69,7 @@ SYSCALL pfint()
 		scPointer = frameToInsert.next;
 		//insert into scq
 		//also delete in get_frm whenever reading from scq
+		kprintf("\n444444444444444\n");
 	}
 	else {
 		struct fifo frameToInsert;
@@ -78,6 +80,7 @@ SYSCALL pfint()
 		fifohead.next = &frameToInsert;
 	}
 
+	kprintf("\n5555555555\n");
 	read_bs( (char*)framePointer, &store, &pageth);
 	
 	unsigned long pteAddress = pdePtr->pd_base*NBPG + 4*pageNumber;
