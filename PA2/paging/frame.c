@@ -16,7 +16,7 @@
 SYSCALL init_frm()
 {		
 	//now I don't need this.
-	fr_map_t *ptr = NFRAMES*NBPG;
+	//fr_map_t *ptr = NFRAMES*NBPG;
 	int i = 0;
 	while (i < NFRAMES) {
 		//frm_tab[i] = ptr;
@@ -26,7 +26,7 @@ SYSCALL init_frm()
 		frm_tab[i].fr_refcnt = 0;
 		frm_tab[i].fr_type = FR_PAGE;
 		frm_tab[i].fr_dirty = 0;
-		++ptr;
+		//++ptr;
 		i++;
 	}
 
@@ -43,7 +43,7 @@ SYSCALL get_frm(int* avail)
 	//starting with 5 because the first 5 frames 
 	//after kernel memory are assigned for global 
 	//page tables and global page directories
-	int i = 5;
+	int i = 0;
 	while (i < NFRAMES) {
 		if (frm_tab[i].fr_status == 0) {
 			//FRAME0 will give the frame till kernel memory 
