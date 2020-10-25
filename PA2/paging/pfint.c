@@ -19,8 +19,11 @@ SYSCALL pfint()
 	kprintf("\n0000000000000\n");
 	unsigned long faultingPage = read_cr2();
 	int store, pageth;
-	if (bsm_lookup(getpid(), faultingPage, &store, &pageth) == SYSERR) {
+	int temp = bsm_lookup(getpid(), faultingPage, &store, &pageth);
+	kprintf("temp from bsm_lookup = %d", temp);
+	if (temp == SYSERR) {
 		// kill(getpid());
+		kprintf("\nBSM LOOKUP FAILED\n");
 		return SYSERR;
 	}	
 	kprintf("\nXXXXXXXXXXXX\n");
@@ -37,7 +40,7 @@ SYSCALL pfint()
 		//create new page table for process
 		//mark pd_pres = 1
 		//add location of pt to pd_base
-		
+		kprintf("\n creaing a new page table and CALLING get_frm from pfint.c\n");
 		if (get_frm(&framePointer) == SYSERR) {
  	             	// kill(getpid());
 					kprintf("\nFFFFFFFFFFFFFF\n");
