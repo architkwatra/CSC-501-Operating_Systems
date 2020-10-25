@@ -114,18 +114,18 @@ void write_cr0(unsigned long n) {
 
   STATWORD ps;
   disable(ps);
-//kprintf("00000000000\n");
+kprintf("00000000000\n");
   tmp = n;
   asm("pushl %eax");
-//kprintf("11111111111111\n");
+kprintf("11111111111111\n");
   asm("movl tmp, %eax");		/* mov (move) value at tmp into %eax register. 
 					   "l" signifies long (see docs on gas assembler)	*/
-//kprintf("2222222222222222\n");
+kprintf("2222222222222222\n");
   asm("movl %eax, %cr0");
   asm("popl %eax");
-//kprintf("333333333333333\n");
+kprintf("333333333333333\n");
   restore(ps);
-	//kprintf("44444444444444444\n");
+kprintf("44444444444444444\n");
   return;
 
 }
@@ -188,7 +188,7 @@ void enable_paging(){
   unsigned long temp =  read_cr0();
   temp = temp | ( 0x1 << 31 ) | 0x1;
   write_cr0(temp); 
-//kprintf("33333333\n");
+kprintf("33333333\n");
 }
 
 
