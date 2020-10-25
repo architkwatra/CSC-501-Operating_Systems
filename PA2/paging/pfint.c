@@ -13,13 +13,14 @@ SYSCALL pfint()
 {
 
 	//might need to interrupt
+	kprintf("\n0000000000000\n");
 	unsigned long faultingPage = read_cr2();
 	int store, pageth;
 	if (bsm_lookup(getpid(), faultingPage, &store, &pageth) == SYSERR) {
 		// kill(getpid());
 		return SYSERR;
 	}	
-
+	kprintf("\nXXXXXXXXXXXX\n");
 	int vp = faultingPage>>12;
 	unsigned long pdbrCurrentProcess = read_cr3();
 	unsigned long ptNumber = faultingPage>>22;
@@ -28,6 +29,7 @@ SYSCALL pfint()
 	unsigned long pdeAddress = pdbrCurrentProcess + 4*ptNumber;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
 	int framePointer;
+	kprintf("\nDDDDDDDDDDDDDDD\n");
 	if (pdePtr->pd_pres == 0) {
 		//create new page table for process
 		//mark pd_pres = 1
@@ -35,6 +37,7 @@ SYSCALL pfint()
 		
 		if (get_frm(&framePointer) == SYSERR) {
  	             	// kill(getpid());
+					kprintf("\nFFFFFFFFFFFFFF\n");
                  	return SYSERR;
 	        }
 		int idx = (framePointer)/NBPG - FRAME0;
@@ -43,15 +46,17 @@ SYSCALL pfint()
 		frm_tab[idx].fr_pid = getpid();
 		pdePtr->pd_pres = 1;
 		pdePtr->pd_base = (int)framePointer/NBPG;
+		kprintf("\nEEEEEEEEEEEEEE\n");
 	}
 	kprintf("\n1111111111111111\n");
 	int idx = pdePtr->pd_base - FRAME0;
 	frm_tab[idx].fr_refcnt++;
 	if (get_frm(&framePointer) == SYSERR) {
 		// kill(getpid());
+		kprintf("\nZZZZZZZZZZZZZZZZZZzz\n");
 		return SYSERR;
 	}
-	kprintf("\2222222222222222222\n");
+	kprintf("\n2222222222222222222\n");
 	idx = (int)(framePointer)/NBPG - FRAME0;
 	frm_tab[idx].fr_status = 1;
 	frm_tab[idx].fr_type = FR_PAGE;
