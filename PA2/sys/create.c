@@ -79,6 +79,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	int freeFramePointer = 0;
 	if (get_frm(&freeFramePointer) == SYSERR) {
             //    kill(getpid());
+			kprintf("get_frm() called from create.c and returned error\n");
                return SYSERR;
         }
 	int frameId = ((int)freeFramePointer)/NBPG - FRAME0;

@@ -409,7 +409,8 @@ sysinit()
 			pageTableEntry->pt_global = 1;
 			pageTableEntry->pt_avail = 0;
 			//check this logic
-			pageTableEntry->pt_base = i*FRAME0 + j;
+			pageTableEntry->pt_base = globalPagePFN /*i*FRAME0 + j*/;
+			globalPagePFN++;
 			j++;
 			pageTableEntry++;
 		}
