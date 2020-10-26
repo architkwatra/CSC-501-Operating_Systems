@@ -66,7 +66,7 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 	
 	if (ptr->store >= 0 && ptr->store < 8) {
 		*store = ptr->store;
-		*pageth = (int)(vaddr/NBPG) - bsm_tab[str].bs_vpno;
+		*pageth = (int)(vaddr/NBPG) - bsm_tab[ptr->store].bs_vpno;
 		return OK;
 	}
 	return SYSERR;

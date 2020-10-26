@@ -13,7 +13,7 @@ int i = 0;
 SYSCALL pfint()
 {
 	i++;
-	if (i >= 20)
+	if (i >= 100)
 		return;
 	//might need to interrupt
 	kprintf("\n0000000000000\n");
