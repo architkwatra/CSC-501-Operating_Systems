@@ -88,7 +88,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 			kprintf("get_frm() called from create.c and returned error\n");
                return SYSERR;
         }
-	kprintf("get_frm returned frame = %d and address = %d", t, freeFramePointer);
+	// kprintf("get_frm returned frame = %d and address = %d", t, freeFramePointer);
 	pptr->pdbr = freeFramePointer;
 	int frameId = t/*((int)freeFramePointer)/NBPG - FRAME0*/;
 	frm_tab[frameId].fr_status = 1;
@@ -107,10 +107,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 
 		directoryPointer++;
 		++j;
-	}
-	 
-	kprintf("proctab[pid].pdbr for pid = %d is %lu\n", proctab[pid].pdbr);
-	
+	}	
 		
 	/* push arguments */
 	pptr->pargs = nargs;

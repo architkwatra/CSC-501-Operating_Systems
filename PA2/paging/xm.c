@@ -16,7 +16,7 @@ SYSCALL xmmap(int virtpage, bsd_t source, int npages)
 	if (bsm_tab[source].bs_isPrivate == 1)
 		return SYSERR;
 
-	if (bsm_tab[source].bs_status = 0 || (bsm_tab[source].bs_npages >= npages)) {
+	if (bsm_tab[source].bs_status == 0 || (bsm_tab[source].bs_npages >= npages)) {
 		bsm_map(getpid(), virtpage, source, npages);
 		kprintf("BS-%d booked for pid-%d\n", source, bsm_tab[source].bs_pid);
 		return OK;
