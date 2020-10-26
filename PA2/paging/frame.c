@@ -55,6 +55,7 @@ SYSCALL get_frm(int* avail)
 			*avail = (FRAME0 + i)*NBPG;
 			//can I do avail = &frm_tab[i]???
 			restore(ps);
+			kprintf("Returning i = %d and *avail = %d\n", i, *avail);
 			return i;
 		}
 		i++;
