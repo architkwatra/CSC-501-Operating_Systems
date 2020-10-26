@@ -17,10 +17,12 @@ SYSCALL resume(int pid)
 
 	disable(ps);
 	if (isbadpid(pid) || (pptr= &proctab[pid])->pstate!=PRSUSP) {
+		kprintf("\nRESUME.C ENCOUNTERED AN ERROR\n");
 		restore(ps);
 		return(SYSERR);
 	}
 	prio = pptr->pprio;
+	kprintf("\n PUTTING THE PROCESS IN THE READY QUEUE, with pid = %d\n", getpid());
 	ready(pid, RESCHYES);
 	restore(ps);
 	return(prio);
