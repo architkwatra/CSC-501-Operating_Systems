@@ -33,9 +33,21 @@ struct	qent	q[NQENT];	/* q table (see queue.c)		*/
 int	nextqueue;		/* next slot in q structure to use	*/
 char	*maxaddr;		/* max memory address (set by sizmem)	*/
 struct	mblock	memlist;	/* list of free memory blocks		*/
+
+
+struct scq scqhead;
+struct scq *scPointer = &scqhead;
+struct fifo fifohead;
+
+bs_map_t bsm_tab[8];
+fr_map_t frm_tab[NFRAMES];
+
+
+
 #ifdef	Ntty
 struct  tty     tty[Ntty];	/* SLU buffers and mode control		*/
 #endif
+
 
 /* active system status */
 int	numproc;		/* number of live user processes	*/
@@ -46,16 +58,11 @@ int	rdyhead,rdytail;	/* head/tail of ready list (q indicies)	*/
 char 	vers[80];
 int	console_dev;		/* the console device			*/
 
-struct scq scqhead;
-struct scq *scPointer = &scqhead;
-struct fifo fifohead;
-bs_map_t bsm_tab[8];
-fr_map_t frm_tab[NFRAMES];
-
-
-
 /*  added for the demand paging */
 int page_replace_policy = SC;
+//int page_replace_policy = AGING;
+
+
 
 /************************************************************************/
 /***				NOTE:				      ***/
@@ -80,7 +87,7 @@ nulluser()				/* babysit CPU when no one is home */
         int userpid;
 
 	console_dev = SERIAL0;		/* set console to COM0 */
-
+	
 	initevec();
 
 	kprintf("system running up!\n");
@@ -141,8 +148,6 @@ sysinit()
 	struct	sentry	*sptr;
 	struct	mblock	*mptr;
 	SYSCALL pfintr();
-
-	
 
 	numproc = 0;			/* initialize system variables */
 	nextproc = NPROC-1;
@@ -209,6 +214,9 @@ sysinit()
 	pptr->paddr = (WORD) nulluser;
 	pptr->pargs = 0;
 	pptr->pprio = 0;
+
+	
+
 	currpid = NULLPROC;
 
 	for (i=0 ; i<NSEM ; i++) {	/* initialize semaphores */
@@ -216,45 +224,57 @@ sysinit()
 		sptr->sqtail = 1 + (sptr->sqhead = newqueue());
 	}
 
-	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */
-
-
-
-	init_frm();
-	init_bsm();
-
-	set_evec(14, pfintr);
+	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */	
+	
 	
 
+	init_frm();
+	init_bsm();	
+	set_evec(14, (u_long)pfintr);
+
+	// creating global page tables
+	// check the logic for pageNumber
+	
+	i = 0;
+	j = 0;
+
+	int globalPagePFN = 0;
+	i = 0;
+	j = 0;
+	while (i < 4) {		
+		frm_tab[i+1].fr_status = 1;
+		frm_tab[i+1].fr_type = FR_TBL;
+		pt_t *pageTableEntry = (FRAME0 + i + 1)*NBPG;
+		while (j < 1024) {
+			pageTableEntry->pt_pres = 1;
+			pageTableEntry->pt_write = 1;
+			pageTableEntry->pt_base = i*FRAME0 + j;
+			j++;
+			pageTableEntry++;
+		}
+		i++;
+	}
+
+	pd_t *ptr = proctab[NULLPROC].pdbr = FRAME0*NBPG;
+	frm_tab[0].fr_status = 1;
 	frm_tab[0].fr_pid = NULLPROC;
 	frm_tab[0].fr_type = FR_DIR;
-	frm_tab[0].fr_status = 1;
-	for (i = 0; i < 4; i++) {
-
-		pd_t *pdePointer = (FRAME0)*NBPG + sizeof(pd_t)*i;
-		pdePointer->pd_pres = 1;
-		pdePointer->pd_write = 1;
-		pdePointer->pd_base = FRAME0 + i + 1;		
+	
+	i = 0;
+	while (i < 1024) {
+		ptr->pd_write = 1;
+		if (i < 4) {
+			ptr->pd_pres = 1;
+			// (i + FRAME0 + 1) = 1024 + i(=0) + 1 = 1025 
+			ptr->pd_base = (i + FRAME0 + 1);
+		}		
+		ptr++;
+		i++;
 	}
 	pptr->pdbr = FRAME0*NBPG;
-
-	int p  = 0;
-	for (i = 0; i < 4; i++) {
-		frm_tab[i+1].fr_type = FR_TBL;
-		frm_tab[i+1].fr_status = 1;
-		int tab = 0;
-		for (; tab < 1024; tab++) {
-			pt_t *ptePointer = NBPG*(FRAME0 + i + 1) + tab*sizeof(pt_t);
-			ptePointer->pt_pres = 1;
-			ptePointer->pt_write = 1;
-			ptePointer->pt_base = (i*FRAME0) + tab;
-		}	
-
-	}
-
-
+	
 	write_cr3(pptr->pdbr);
-	enable_paging();
+	enable_paging();	
 	return(OK);
 }
 
