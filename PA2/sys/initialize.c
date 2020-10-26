@@ -233,7 +233,7 @@ sysinit()
 	set_evec(14, pfintr);
 
 
-	rm_tab[0].fr_pid = NULLPROC;
+	frm_tab[0].fr_pid = NULLPROC;
 	frm_tab[0].fr_type = FR_DIR;
 	frm_tab[0].fr_status = 1;
 	for (i = 0; i < 4; i++) {
