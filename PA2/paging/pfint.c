@@ -100,7 +100,6 @@ SYSCALL pfint()
 	ptePtr->pt_pres = 1;
 	// ptePtr->pt_write = 1;
 	ptePtr->pt_base = (int)framePointer/NBPG;
-	kprintf("\nRETURNING FROM PFINT.c\n");
 	write_cr3(pdbrCurrentProcess);
 	return OK;
 }
