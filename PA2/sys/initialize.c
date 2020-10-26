@@ -233,30 +233,35 @@ sysinit()
 	set_evec(14, pfintr);
 
 
-	frm_tab[0].fr_pid = NULLPROC;
-	frm_tab[0].fr_type = FR_DIR;
 	frm_tab[0].fr_status = 1;
-	for (i = 0; i < 4; i++) {
-
-		pd_t *pdePointer = (FRAME0)*NBPG + sizeof(pd_t)*i;
-		pdePointer->pd_pres = 1;
-		pdePointer->pd_write = 1;
-		pdePointer->pd_base = FRAME0 + i + 1;		
+	frm_tab[0].fr_pid = NULLPROC;
+	frm_tab[0].fr_type = FR_DIR;	
+	i = 0;
+	while (i < 4) {
+		pd_t *ptr = FRAME0*NBPG + sizeof(pd_t)*i;
+		ptr->pd_write = 1;
+		ptr->pd_pres = 1; 
+		ptr->pd_base = i + FRAME0 + 1;
+		i++;
 	}
 	pptr->pdbr = FRAME0*NBPG;
+	
+	// creating global page tables
+	// check the logic for pageNumber
 
-	int p  = 0;
-	for (i = 0; i < 4; i++) {
+	i = 0;
+	while (i < 4) {		
 		frm_tab[i+1].fr_type = FR_TBL;
 		frm_tab[i+1].fr_status = 1;
-		int tab = 0;
-		for (; tab < 1024; tab++) {
-			pt_t *ptePointer = NBPG*(FRAME0 + i + 1) + tab*sizeof(pt_t);
-			ptePointer->pt_pres = 1;
-			ptePointer->pt_write = 1;
-			ptePointer->pt_base = (i*FRAME0) + tab;
-		}	
-
+		j = 0;
+		while (j < 1024) {
+			pt_t *pageTableEntry = (FRAME0 + i + 1)*NBPG + sizeof(pt_t)*j;
+			pageTableEntry->pt_pres = 1;
+			pageTableEntry->pt_write = 1;
+			pageTableEntry->pt_base = i*FRAME0 + j;
+			j++;
+		}
+		i++;
 	}
 	write_cr3(pptr->pdbr);
 	enable_paging();	
