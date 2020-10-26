@@ -85,7 +85,7 @@ int	resched()
 
 	if (oldpid != NULLPROC && oldpid != 49)
 		writeBackDirtyFrames(oldpid);
-	write_cr3((u_long)nptr->pdbr);	
+	write_cr3(nptr->pdbr);	
 	ctxsw(&optr->pesp, optr->pirmask, &nptr->pesp, nptr->pirmask);
 
 #ifdef	DEBUG

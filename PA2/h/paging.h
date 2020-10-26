@@ -107,17 +107,6 @@ int isAccSet(int);
 
 
 
-
-
-//make extern if required
-int markIfDirty(int);
-int markPTENonExistent(int);
-int writeBackDirtyFrames(int);
-int removeFramesOnKill(int);
-
-
-
-
 extern bs_map_t bsm_tab[];
 extern fr_map_t frm_tab[];
 /* Prototypes for required API calls */
