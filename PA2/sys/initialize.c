@@ -232,6 +232,25 @@ sysinit()
 	init_bsm();	
 	set_evec(14, (u_long)pfintr);
 
+
+	pd_t *ptr = proctab[NULLPROC].pdbr = FRAME0*NBPG;
+	frm_tab[0].fr_status = 1;
+	frm_tab[0].fr_pid = NULLPROC;
+	frm_tab[0].fr_type = FR_DIR;
+	
+	i = 0;
+	while (i < 1024) {
+		ptr->pd_write = 1;
+		if (i < 4) {
+			ptr->pd_pres = 1;
+			// (i + FRAME0 + 1) = 1024 + i(=0) + 1 = 1025 
+			ptr->pd_base = (i + FRAME0 + 1);
+		}		
+		ptr++;
+		i++;
+	}
+	pptr->pdbr = FRAME0*NBPG;
+	
 	// creating global page tables
 	// check the logic for pageNumber
 	
@@ -254,25 +273,6 @@ sysinit()
 		}
 		i++;
 	}
-
-	pd_t *ptr = proctab[NULLPROC].pdbr = FRAME0*NBPG;
-	frm_tab[0].fr_status = 1;
-	frm_tab[0].fr_pid = NULLPROC;
-	frm_tab[0].fr_type = FR_DIR;
-	
-	i = 0;
-	while (i < 1024) {
-		ptr->pd_write = 1;
-		if (i < 4) {
-			ptr->pd_pres = 1;
-			// (i + FRAME0 + 1) = 1024 + i(=0) + 1 = 1025 
-			ptr->pd_base = (i + FRAME0 + 1);
-		}		
-		ptr++;
-		i++;
-	}
-	pptr->pdbr = FRAME0*NBPG;
-	
 	write_cr3(pptr->pdbr);
 	enable_paging();	
 	return(OK);
