@@ -24,13 +24,13 @@ int	resched()
 
 	disable(PS);
 	/* no switch needed if current process priority higher than next*/
-
+	int oldpid;
 	if ( ( (optr= &proctab[currpid])->pstate == PRCURR) &&
 	   (lastkey(rdytail)<optr->pprio)) {
 		restore(PS);
 		return(OK);
 	}
-	
+	oldpid = currpid;
 #ifdef STKCHK
 	/* make sure current stack has room for ctsw */
 	asm("movl	%esp, currSP");
@@ -82,11 +82,11 @@ int	resched()
 #ifdef	DEBUG
 	PrintSaved(nptr);
 #endif
-	writeBackDirtyFrames(currpid);
+
+	if (oldpid != NULLPROC && oldpid != 49)
+		writeBackDirtyFrames(oldpid);
 	write_cr3((u_long)nptr->pdbr);	
-	kprintf("entering ctxsw\n");
 	ctxsw(&optr->pesp, optr->pirmask, &nptr->pesp, nptr->pirmask);
-	kprintf("exiting ctxsw\n");
 
 #ifdef	DEBUG
 	PrintSaved(nptr);

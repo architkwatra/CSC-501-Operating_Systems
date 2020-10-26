@@ -140,11 +140,16 @@ int writeBackDirtyFrames(int pid) {
 	int i = 0;
 	while (i < NFRAMES) {
 		markIfDirty(i);
-		if (frm_tab[i].fr_pid == pid && frm_tab[i].fr_dirty == 1) {
+		if (frm_tab[i].fr_pid == pid && frm_tab[i].fr_type == FR_PAGE) {
+			markIfDirty(i);
+		}
+		if (frm_tab[i].fr_status == 1 && frm_tab[i].fr_pid == pid && frm_tab[i].fr_dirty == 1 && frm_tab[i].fr_type == FR_PAGE) {
 			if (writeDirtyFrame(i) == SYSERR) {
 				return SYSERR;
 			}
 		}
+
+
 		i++;
 	}
 	return OK;
@@ -159,7 +164,6 @@ int writeDirtyFrame(int i) {
                 }   
                 char *pointerToSrc = (FRAME0 + i)*NBPG;
                 write_bs(pointerToSrc, &store, &pageth);
-                
                 frm_tab[i].fr_dirty = 0;
 		return OK;
 }

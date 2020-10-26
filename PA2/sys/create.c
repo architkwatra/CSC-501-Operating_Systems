@@ -69,6 +69,11 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	pptr->pnxtkin = BADPID;
 	pptr->pdevs[0] = pptr->pdevs[1] = pptr->ppagedev = BADDEV;
 
+
+	pptr->store = -1;
+
+
+
 		/* Bottom of stack */
 	*saddr = MAGIC;
 	savsp = (unsigned long)saddr;
@@ -89,7 +94,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	frm_tab[frameId].fr_status = 1;
 	frm_tab[frameId].fr_pid = pid;
 	frm_tab[frameId].fr_type = FR_DIR;
-	frm_tab[frameId].fr_vpno = (int)procaddr>>12;
+	frm_tab[frameId].fr_vpno = (int)procaddr/NBPG;
 	
 	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
 	int j = 0;

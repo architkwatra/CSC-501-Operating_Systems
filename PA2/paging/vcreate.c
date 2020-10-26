@@ -33,29 +33,30 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	int pid = create(procaddr,ssize,priority,name,nargs,args);
 	disable(ps);
 	struct pentry *ptr = &proctab[pid];
-	
+	if (pid == SYSERR)	
+		return SYSERR;
 	//used in xmmap
 	ptr->isPrivate = 1;
 
 	//get_bsm will return a free entry from bsm_tab by checking its status
 	int freeStore = get_bsm(NULL);
 	if (freeStore != SYSERR) {
-		
 		bsm_map(pid, (int)procaddr>>12, freeStore, hsize);
 		bsm_tab[freeStore].bs_isPrivate = 1;
-		
-		(proctab[pid].vmemlist)->mnext = (struct mblock*) BACKING_STORE_BASE + freeStore*BACKING_STORE_UNIT_SIZE;
+		struct mblock *mptr;
+		(proctab[pid].vmemlist)->mnext = mptr = (struct mblock*) BACKING_STORE_BASE + freeStore*BACKING_STORE_UNIT_SIZE;
 		proctab[pid].vhpnpages = hsize;
-		proctab[pid].vmemlist->mlen = hsize*NBPG;
+		mptr->mlen = hsize*NBPG;
+		mptr->mnext = 0;
 		
-		ptr->store = freeStore;
-		ptr->hsize = hsize;
+		// ptr->store = freeStore;
+		// ptr->hsize = hsize;
 		
 	} else {
 		return SYSERR;
 	}
 	restore(ps);
-	return OK;
+	return pid;
 
 		
 }
