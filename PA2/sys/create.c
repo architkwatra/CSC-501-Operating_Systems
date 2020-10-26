@@ -104,15 +104,9 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 		++j;
 	}
 	 
-	kprintf("\nInside the cretae() and created proc with pid = %d, below are the directory entries\n", pid);			
-	directoryPointer = (pd_t*) pptr->pdbr;
-	j = 0;
-	while (j < 4) {
-		kprintf("\npd_pres = %d, pd_write = %d, pd_base = %d\n", directoryPointer->pd_pres, directoryPointer->pd_write, directoryPointer->pd_base);
-		directoryPointer++;
-		++j;
-	}
+	kprintf("proctab[pid].pdbr for pid = %d is %lu\n", proctab[pid].pdbr);
 	
+		
 	/* push arguments */
 	pptr->pargs = nargs;
 	a = (unsigned long *)(&args) + (nargs-1); /* last argument	*/
