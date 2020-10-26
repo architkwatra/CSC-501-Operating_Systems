@@ -22,7 +22,7 @@ SYSCALL pfint()
 		kprintf("\nBSM LOOKUP FAILED\n");
 		return SYSERR;
 	}	
-	// kprintf("\nXXXXXXXXXXXX\n");
+	kprintf("\nXXXXXXXXXXXX\n");
 	int vp = faultingPage>>12;
 	unsigned long pdbrCurrentProcess = proctab[currpid].pdbr;
 	unsigned long ptNumber = faultingPage>>22;
@@ -51,25 +51,25 @@ SYSCALL pfint()
 		pdePtr->pd_pres = 1;
 		pdePtr->pd_write = 1;
 		pdePtr->pd_base = (int)framePointer/NBPG;
-		// kprintf("\nEEEEEEEEEEEEEE\n");
+		kprintf("\nEEEEEEEEEEEEEE\n");
 	}
-	// kprintf("\n1111111111111111\n");
+	kprintf("\n1111111111111111\n");
 	int idx = pdePtr->pd_base - FRAME0;
 	frm_tab[idx].fr_refcnt++;
 	idx = get_frm(&framePointer);
 	if (idx == SYSERR) {
 		// kill(getpid());
-		// kprintf("\nZZZZZZZZZZZZZZZZZZzz\n");
+		kprintf("\nZZZZZZZZZZZZZZZZZZzz\n");
 		return SYSERR;
 	}
-	// kprintf("\n2222222222222222222\n");
+	kprintf("\n2222222222222222222\n");
 	//idx = (int)(framePointer)/NBPG - FRAME0;
 	frm_tab[idx].fr_status = 1;
 	frm_tab[idx].fr_type = FR_PAGE;
 	frm_tab[idx].fr_pid = getpid();
 	frm_tab[idx].fr_vpno = vp;
 	frm_tab[idx].fr_dirty = 0;
-	// kprintf("\n33333333333333\n");
+	kprintf("\n33333333333333\n");
 	// do we need to update ref_cnt here???!?
 	if (grpolicy() != AGING) {
 		struct scq frameToInsert;
@@ -81,7 +81,7 @@ SYSCALL pfint()
 		scPointer = frameToInsert.next;
 		//insert into scq
 		//also delete in get_frm whenever reading from scq
-		// kprintf("\n444444444444444\n");
+		kprintf("\n444444444444444\n");
 	}
 	else {
 		struct fifo frameToInsert;
