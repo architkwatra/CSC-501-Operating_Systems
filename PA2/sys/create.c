@@ -90,7 +90,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
         }
 	// kprintf("get_frm returned frame = %d and address = %d", t, freeFramePointer);
 	pptr->pdbr = freeFramePointer;
-	int frameId = t/*((int)freeFramePointer)/NBPG - FRAME0*/;
+	int frameId = /*t*/((int)freeFramePointer)/NBPG - FRAME0;
 	frm_tab[frameId].fr_status = 1;
 	frm_tab[frameId].fr_pid = pid;
 	frm_tab[frameId].fr_type = FR_DIR;
