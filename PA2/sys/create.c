@@ -84,13 +84,13 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
                return SYSERR;
         }
 	
-	proctab[pid].pdbr = (freeFramePointer + FRAME0) * NBPG;
+	proctab[pid].pdbr = freeFramePointer;
 	int frameId = ((int)freeFramePointer)/NBPG - FRAME0;
 	frm_tab[frameId].fr_status = 1;
 	frm_tab[frameId].fr_pid = pid;
 	frm_tab[frameId].fr_type = FR_DIR;
 	frm_tab[frameId].fr_vpno = (int)procaddr>>12;
-
+	
 	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
 	int j = 0;
 	while (j < 4) {
