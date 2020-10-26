@@ -382,7 +382,7 @@ frame.o: ../paging/frame.c /usr/include/stdc-predef.h ../h/conf.h \
 get_bs.o: ../paging/get_bs.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/paging.h
 pfint.o: ../paging/pfint.c /usr/include/stdc-predef.h ../h/conf.h \
- ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/paging.h
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/paging.h ../h/proc.h
 policy.o: ../paging/policy.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/paging.h
 read_bs.o: ../paging/read_bs.c /usr/include/stdc-predef.h ../h/conf.h \
