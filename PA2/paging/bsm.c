@@ -12,11 +12,12 @@
 SYSCALL init_bsm()
 {
 	 int i = 0;
-        while (i < 8) {
-		//check if any other variables need to be set
+    while (i < 8) {
 		bsm_tab[i].bs_status = 0;
-		//check if this needs to be 256
+		bsm_tab[i].bs_pid = -1;
+		bsm_tab[i].bs_vpno = -1;
 		bsm_tab[i].bs_npages = 256;
+		bsm_tab[i].bs_isPrivate = 0;
 		++i;
 	}
 }
@@ -32,7 +33,7 @@ SYSCALL get_bsm(int* avail)
 		//add pointer	
 		if (bsm_tab[i].bs_status == 0) {
 			*avail = i;
-			return OK;	
+			return i;	
 		}
 		++i;
 	}
@@ -46,7 +47,6 @@ SYSCALL get_bsm(int* avail)
  */
 SYSCALL free_bsm(int i)
 {
-	proctab[bsm_tab[i].bs_pid].store = -1;
 	bsm_tab[i].bs_status = 0;
 	bsm_tab[i].bs_pid = -1;
 	bsm_tab[i].bs_vpno = -1;

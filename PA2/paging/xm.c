@@ -12,35 +12,48 @@
  */
 SYSCALL xmmap(int virtpage, bsd_t source, int npages)
 {	
-	// Ask about semaphore in this since getpid() might contxswch and return the wrong pid
-	if (npages <= 0 || 
-		npages > 256 || 
-		source < 0 || 
-		source > 7)
+
+	if (bsm_tab[source].bs_isPrivate == 1)
 		return SYSERR;
+
+	if (bsm_tab[source].bs_status = 0 || (bsm_tab[source].bs_npages >= npages)) {
+		bsm_map(getpid(), virtpage, source, npages);
+		kprintf("BS-%d booked for pid-%d\n", source, bsm_tab[source].bs_pid);
+		return OK;
+	}
+		
+	return SYSERR;
+
+
+	// Ask about semaphore in this since getpid() might contxswch and return the wrong pid
+	// if (npages <= 0 || 
+	// 	npages > 256 || 
+	// 	source < 0 || 
+	// 	source > 7)
+	// 	return SYSERR;
 
 
 	
-	//Remember to set isPrivate variable in vcreate
-	if (proctab[currpid].isPrivate == 1) {
-		if (bsm_tab[source].bs_status == 1) 
-			return SYSERR;
-		bsm_map(currpid, virtpage, source, npages);
-		bsm_tab[source].bs_isPrivate = 1;
-	} else {
-		if (bsm_tab[source].bs_status == 1) 
-			if (bsm_tab[source].bs_isPrivate == 1)
-				return SYSERR;
-			else {
-				if (bsm_tab[source].bs_npages < npages)
-					return SYSERR;
-			}
+	// //Remember to set isPrivate variable in vcreate
+	// if (proctab[currpid].isPrivate == 1) {
+	// 	if (bsm_tab[source].bs_status == 1) 
+	// 		return SYSERR;
+	// 	bsm_map(getpid(), virtpage, source, npages);
+	// 	bsm_tab[source].bs_isPrivate = 1;
+	// } else {
+	// 	if (bsm_tab[source].bs_status == 1) 
+	// 		if (bsm_tab[source].bs_isPrivate == 1)
+	// 			return SYSERR;
+	// 		else {
+	// 			if (bsm_tab[source].bs_npages < npages)
+	// 				return SYSERR;
+	// 		}
 
-		bsm_map(currpid, virtpage, source, npages);
-		bsm_tab[source].bs_isPrivate = 0;
+	// 	bsm_map(currpid, virtpage, source, npages);
+	// 	bsm_tab[source].bs_isPrivate = 0;
 
-	}
-	return OK;	
+	// }
+	// return OK;	
 }
 
 
@@ -51,15 +64,8 @@ SYSCALL xmmap(int virtpage, bsd_t source, int npages)
  */
 SYSCALL xmunmap(int virtpage)
 {	
-	int i = 0;
-	while (i < 8) {
-		if (bsm_tab[i].bs_vpno == virtpage) {
-			bsm_unmap(currpid, virtpage, 0);
-			return (OK);
-		}	
-		i++;
-	}
-	kprintf("Returning SYSERR from xmunmap\n");        
-        return SYSERR;	
+	writeBackDirtyFrames(getpid());
+	bsm_unmap(getpid(), virtpage, 0);
+	return OK;	
 
 }
