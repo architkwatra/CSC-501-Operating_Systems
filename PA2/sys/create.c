@@ -93,10 +93,13 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	
 	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
 	int j = 0;
-	while (j < 4) {
-		directoryPointer->pd_pres = 1;
+	while (j < 1024) {
 		directoryPointer->pd_write = 1;
-		directoryPointer->pd_base = (FRAME0 + j + 1);
+		if (j < 4) {
+			directoryPointer->pd_pres = 1;		
+			directoryPointer->pd_base = (FRAME0 + j + 1);
+		}
+
 		directoryPointer++;
 		++j;
 	}
