@@ -64,9 +64,9 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 {
 	struct pentry *ptr = &proctab[pid];
 	
-	if (ptr->store >= 0 && vaddr <= NBPG*bsm_tab[ptr->store].bs_npages) {
+	if (ptr->store >= 0 && ptr->store < 8) {
 		*store = ptr->store;
-		*pageth = (int) vaddr >> 12;
+		*pageth = (int)(vaddr/NBPG) - bsm_tab[str].bs_vpno;
 		return OK;
 	}
 	return SYSERR;
