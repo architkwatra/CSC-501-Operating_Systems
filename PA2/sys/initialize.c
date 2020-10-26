@@ -230,10 +230,10 @@ sysinit()
 
 	init_frm();
 	init_bsm();	
-	set_evec(14, (u_long)pfintr);
+	set_evec(14, pfintr);
 
 
-	pd_t *ptr = proctab[NULLPROC].pdbr = FRAME0*NBPG;
+	pd_t *ptr = FRAME0*NBPG;
 	frm_tab[0].fr_status = 1;
 	frm_tab[0].fr_pid = NULLPROC;
 	frm_tab[0].fr_type = FR_DIR;
@@ -241,10 +241,8 @@ sysinit()
 	i = 0;
 	while (i < 4) {
 		ptr->pd_write = 1;
-		ptr->pd_pres = 1;
-		// (i + FRAME0 + 1) = 1024 + i(=0) + 1 = 1025 
+		ptr->pd_pres = 1; 
 		ptr->pd_base = (i + FRAME0 + 1);
-				
 		ptr++;
 		i++;
 	}
@@ -252,9 +250,6 @@ sysinit()
 	
 	// creating global page tables
 	// check the logic for pageNumber
-	
-	i = 0;
-	j = 0;
 
 	int globalPagePFN = 0;
 	i = 0;
@@ -262,13 +257,12 @@ sysinit()
 	while (i < 4) {		
 		frm_tab[i+1].fr_status = 1;
 		frm_tab[i+1].fr_type = FR_TBL;
-		pt_t *pageTableEntry = (FRAME0 + i + 1)*NBPG;
 		while (j < 1024) {
+			pt_t *pageTableEntry = (FRAME0 + i + 1)*NBPG + sizeof(pt_t)*j;
 			pageTableEntry->pt_pres = 1;
 			pageTableEntry->pt_write = 1;
 			pageTableEntry->pt_base = i*FRAME0 + j;
 			j++;
-			pageTableEntry++;
 		}
 		i++;
 	}
