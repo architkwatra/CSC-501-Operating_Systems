@@ -233,17 +233,15 @@ sysinit()
 	set_evec(14, pfintr);
 
 
-	pd_t *ptr = FRAME0*NBPG;
 	frm_tab[0].fr_status = 1;
 	frm_tab[0].fr_pid = NULLPROC;
-	frm_tab[0].fr_type = FR_DIR;
-	
+	frm_tab[0].fr_type = FR_DIR;	
 	i = 0;
 	while (i < 4) {
+		pd_t *ptr = FRAME0*NBPG + sizeof(pd_t)*i;
 		ptr->pd_write = 1;
 		ptr->pd_pres = 1; 
 		ptr->pd_base = (i + FRAME0 + 1);
-		ptr++;
 		i++;
 	}
 	pptr->pdbr = FRAME0*NBPG;
