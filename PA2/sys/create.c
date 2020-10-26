@@ -83,7 +83,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 			kprintf("get_frm() called from create.c and returned error\n");
                return SYSERR;
         }
-	
+	kprintf("get_frm returned frame = %d and address = %d", t, freeFramePointer);
 	proctab[pid].pdbr = freeFramePointer;
 	int frameId = t/*((int)freeFramePointer)/NBPG - FRAME0*/;
 	frm_tab[frameId].fr_status = 1;
