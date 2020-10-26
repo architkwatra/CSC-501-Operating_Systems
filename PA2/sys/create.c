@@ -77,15 +77,15 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	//Make the page directory for the current process
 	//kprintf("Making the page directory for the new process in create \n\n");	
 	int freeFramePointer = 0;
-	
-	if (get_frm(&freeFramePointer) == SYSERR) {
+	int t = get_frm(&freeFramePointer);
+	if (t == SYSERR) {
             //    kill(getpid());
 			kprintf("get_frm() called from create.c and returned error\n");
                return SYSERR;
         }
 	
 	proctab[pid].pdbr = freeFramePointer;
-	int frameId = ((int)freeFramePointer)/NBPG - FRAME0;
+	int frameId = t/*((int)freeFramePointer)/NBPG - FRAME0*/;
 	frm_tab[frameId].fr_status = 1;
 	frm_tab[frameId].fr_pid = pid;
 	frm_tab[frameId].fr_type = FR_DIR;

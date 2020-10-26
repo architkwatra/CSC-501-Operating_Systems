@@ -62,7 +62,6 @@ int	console_dev;		/* the console device			*/
 /*  added for the demand paging */
 int page_replace_policy = SC;
 //int page_replace_policy = AGING;
-
 int frm = 0;
 
 
@@ -379,10 +378,6 @@ sysinit()
 	//int pageNumber: 20;
 	int globalPagePFN = 0;
 	kprintf("Setting the global page tables\n");
-	// for (i=0; i<20; ++i) {
-	// 	kprintf("\nfrm_tab[i].fr_status = %d, frm_tab[i].fr_pid = %d, frm_tab[i].fr_type = %d\n", frm_tab[i].fr_status, frm_tab[i].fr_pid, frm_tab[i].fr_type);
-	// }
-	// kprintf("\nXXXXXXXXXXXXXXXXXXXXXXXX\n");
 	i = 0;
 	j = 0;
 	while (i < 4) {
@@ -393,7 +388,7 @@ sysinit()
 		
 		frm_tab[i+1].fr_status = 1;
 		frm_tab[i+1].fr_type = FR_TBL;
-		frm_tab[i+1].fr_pid = NULLPROC;
+		//frm_tab[i+1].fr_pid = NULLPROC;
 
 		pt_t *pageTableEntry = (FRAME0 + i + 1)*NBPG;
 
