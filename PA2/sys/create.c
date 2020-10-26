@@ -15,8 +15,6 @@ LOCAL int newpid();
  *  create  -  create a process to start running a procedure
  *------------------------------------------------------------------------
  */
-
-//pid1 = create(proc1_test1, 2000, 20, "proc1_test1", 0, NULL);
 SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	int	*procaddr;		/* procedure address		*/
 	int	ssize;			/* stack size in words		*/
@@ -70,7 +68,13 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	pptr->pdevs[0] = pptr->pdevs[1] = pptr->ppagedev = BADDEV;
 
 
+
+
+
+
 	pptr->store = -1;
+
+
 
 
 
@@ -78,37 +82,6 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	*saddr = MAGIC;
 	savsp = (unsigned long)saddr;
 
-	
-	//Make the page directory for the current process
-	//kprintf("Making the page directory for the new process in create \n\n");	
-	int freeFramePointer = 0;
-	int t = get_frm(&freeFramePointer);
-	if (t == SYSERR) {
-            //    kill(getpid());
-			kprintf("get_frm() called from create.c and returned error\n");
-               return SYSERR;
-        }
-	// kprintf("get_frm returned frame = %d and address = %d", t, freeFramePointer);
-	pptr->pdbr = freeFramePointer;
-	int frameId = t/*((int)freeFramePointer)/NBPG - FRAME0*/;
-	frm_tab[frameId].fr_status = 1;
-	frm_tab[frameId].fr_pid = pid;
-	frm_tab[frameId].fr_type = FR_DIR;
-	//frm_tab[frameId].fr_vpno = (int)procaddr/NBPG;
-	
-	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
-	int j = 0;
-	while (j < 1024) {
-		directoryPointer->pd_write = 1;
-		if (j < 4) {
-			directoryPointer->pd_pres = 1;		
-			directoryPointer->pd_base = (FRAME0 + j + 1);
-		}
-
-		directoryPointer++;
-		++j;
-	}	
-		
 	/* push arguments */
 	pptr->pargs = nargs;
 	a = (unsigned long *)(&args) + (nargs-1); /* last argument	*/
@@ -133,10 +106,38 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	*--saddr = 0;		/* %esi */
 	*--saddr = 0;		/* %edi */
 	*pushsp = pptr->pesp = (unsigned long)saddr;
-
+	
+	generatePageDirectory(pid, procaddr);
 	restore(ps);
-	kprintf("\nProcess cretaed with PID = %d\n", pid);
 	return(pid);
+}
+
+
+void generatePageDirectory(int pid, int *procaddr) {
+	
+	struct  pentry  *pptr;
+	pptr = &proctab[pid];
+	int freeFramePointer = 0;
+	if (get_frm(&freeFramePointer) == SYSERR) {
+               return SYSERR;
+        }
+	int frameId = (int)freeFramePointer/NBPG - FRAME0;
+	kprintf("\nCreating Page directory for pid-%d at frame-%d and address: %lu", pid, freeFramePointer/NBPG - 1024, freeFramePointer);
+	frm_tab[frameId].fr_status = 1;
+	frm_tab[frameId].fr_pid = pid;
+	frm_tab[frameId].fr_type = FR_DIR;
+	//frm_tab[frameId].fr_vpno = (int)procaddr>>12;
+	pptr->pdbr = freeFramePointer;
+	pd_t *directoryPointer = freeFramePointer;
+        int i = 0;
+        for (; i < 4; i++) {
+		directoryPointer = pptr->pdbr + 4*i;
+		directoryPointer->pd_write = 1;
+                directoryPointer->pd_pres = 1;
+                directoryPointer->pd_base = (FRAME0 + i + 1);
+        }
+	kprintf("\nCreated page directory!!!!!!!!!!!!!!!!\n");
+		
 }
 
 /*------------------------------------------------------------------------
