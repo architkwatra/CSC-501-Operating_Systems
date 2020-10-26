@@ -266,7 +266,7 @@ nulluser()				/* babysit CPU when no one is home */
 
 	/* create a process to execute the user's main program */
 	userpid = create(main,INITSTK,INITPRIO,INITNAME,INITARGS);
-	kprintf("RESUMING MAIN");
+	kprintf("RESUMING MAIN with pid = %d", userpid);
 	resume(userpid);
 
 	while (TRUE)

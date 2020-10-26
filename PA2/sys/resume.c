@@ -22,7 +22,7 @@ SYSCALL resume(int pid)
 		return(SYSERR);
 	}
 	prio = pptr->pprio;
-	kprintf("\n PUTTING THE PROCESS IN THE READY QUEUE, with pid = %d\n", getpid());
+	kprintf("\n PUTTING THE PROCESS IN THE READY QUEUE, with pid = %d\n", pid);
 	ready(pid, RESCHYES);
 	restore(ps);
 	return(prio);
