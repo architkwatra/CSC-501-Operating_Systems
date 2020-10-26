@@ -48,7 +48,7 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 		proctab[pid].vhpnpages = hsize;
 		mptr->mlen = hsize*NBPG;
 		mptr->mnext = 0;
-	d		
+		
 	} else {
 		return SYSERR;
 	}
