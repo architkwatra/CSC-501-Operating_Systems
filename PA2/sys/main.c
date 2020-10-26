@@ -301,7 +301,7 @@ void proc1_test5(int* ret) {
 		*ret = TFAILED;
 	vfreemem(x, 1024);
 
-	x = vgetmem((MAXNPG + 1) * NBPG); //try to acquire a space that is bigger than size of one backing store
+	x = vgetmem((256 + 1) * NBPG); //try to acquire a space that is bigger than size of one backing store
 	if (x != SYSERR) {
 		*ret = TFAILED;
     }
