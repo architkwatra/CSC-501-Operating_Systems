@@ -1,341 +1,106 @@
-/* frame.c - manage physical frames */
+/* pfint.c - pfint */
+
 #include <conf.h>
 #include <kernel.h>
-#include <proc.h>
 #include <paging.h>
+#include <proc.h>
 
 /*-------------------------------------------------------------------------
- * init_frm - initialize frm_tab
+ * pfint - paging fault ISR
  *-------------------------------------------------------------------------
  */
-
-static unsigned long *eax;
-
-SYSCALL init_frm()
+SYSCALL pfint()
 {
-	/* 
-	*/
-	STATWORD ps;
-	disable(ps);
-	int i = 0;
-	for (; i < 1024; i++) {
-
-		frm_tab[i].fr_status = 0;
-		frm_tab[i].fr_pid = -1;
-		frm_tab[i].fr_vpno = -1;
-		frm_tab[i].fr_refcnt = 0;
-		frm_tab[i].fr_type = FR_PAGE;
-		frm_tab[i].fr_dirty = 0;
-
-		/*framePointer->fr_status = 0;
-		framePointer->fr_pid = -1;
-		framePointer->fr_vpno = -1;
-		framePointer->fr_refcnt = 0;
-		framePointer->fr_type = FR_PAGE;
-		framePointer->fr_dirty = 0;
-		frm_tab[i] = framePointer;
-		framePointer++;*/
+	//might need to interrupt
+	unsigned long  faultingPage = read_cr2();
+	int store, pageth;
+	kprintf("\nIN PFINT FOR PID-%d and address is %lu\n", getpid(), faultingPage);
+	if (bsm_lookup(getpid(), faultingPage, &store, &pageth) == SYSERR) {
+		kprintf("BSM LOOKUP FAILING\n");
+		return SYSERR;
 	}
-	disable(ps);
-	return OK;
-}
-
-/*-------------------------------------------------------------------------
- * get_frm - get a free frame according page replacement policy
- *-------------------------------------------------------------------------
- */
-SYSCALL get_frm(int* avail)
-{
-	STATWORD ps;
-        disable(ps);
-	int i = 0;
-	for (; i < NFRAMES; i++) { /*
-		if (frm_tab[i].fr_type == FR_PAGE)
-			markIfDirty(i);*/
-		if (frm_tab[i].fr_status == 0) {
-			*avail = (i + FRAME0)*NBPG;
-			kprintf("\nInside the get_frm() and *avail = %d and i = %d\n", *avail, i);
-			restore(ps);
-			return OK;
-		}
-	}
-/*
- 38 struct scq scqhead;
- 39 scqhead.next = NULL;
- 40 struct scq *scPointer = &scqhead;*/
 	
-	if (grpolicy() != AGING) {
 
-		while (1) {
-			kprintf("\nHere2\n");
-			if (scPointer->next == &scqhead) {
-				scPointer = scqhead.next;
-			}
-			
-			markIfDirty((scPointer->next)->idx);
-			int idx = isAccSet((scPointer->next)->idx);
-			if (idx == (scPointer->next)->idx) {
-				//call free frame
-				free_frm(idx);
-				markPTENonExistent(idx);
-				*avail = (FRAME0 + idx)*NBPG;
-
-
-				//deleting node from scq
-				scPointer->next = (scPointer->next)->next;
-				restore(ps);
-				return OK;
-			}
-			
-			scPointer = scPointer->next;
-		}		
-
-	}
-
-	else {
-
-		struct fifo *q = &fifohead;
-		struct fifo *p = fifohead.next;
-		struct fifo *minprev = q;	
-		int min = 256;
-		while (p != NULL) {
-			kprintf("\nHere3\n");
-			p->age = p->age>>1;
-			
-			if (isAccSet(p->idx) != -1) {
-				if (p->age + 128 > 255)
-					p->age = 255;
-				else
-					p->age += 128;
-			}
-			if (p->age < min) {
-				min = p->age;
-				minprev = q;
-			}
-			q = p;
-			p = p->next;
-		}
-		int idx = (minprev->next)->idx;
-		minprev->next = (minprev->next)->next;
-		free_frm(idx);
-		markPTENonExistent(idx);
-		*avail = (FRAME0 + idx)*NBPG;	
-		restore(ps);
-		return OK;
-	}
-	restore(ps);
-	return SYSERR;
-	
-	//linear search for free frame
-	//	if found: return
-	//	else:
-	//		call policy function which returns a frame to free
-	//		free_frm()
-	//		return frame id/address
-}
-
-
-
-// for the process whose frame is getting evicted, this method writes pt_pres = 0 
-// for the PTE of that process which points to that frame.
-int markPTENonExistent(int idx) {
-        int vpn = frm_tab[idx].fr_vpno;
-
-        unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vpn>>10;
-        unsigned long pageNumber = (vpn<<10)>>10;
-
-        unsigned long pdeAddress = pdbr + 4*ptNumber;
-        pd_t *pdePtr = (pd_t*) pdeAddress;
-
-        unsigned int pt =  pdePtr->pd_base*NBPG;
-        pt_t *ptePointer = pt + 4*pageNumber;
-	
-	ptePointer->pt_pres = 0;
-       
-
-	if (getpid() == frm_tab[idx].fr_pid) {
-		eax = vpn*NBPG;
-		asm("invlpg eax");
-	}
-
-	frm_tab[idx].fr_refcnt--;
-	if (frm_tab[idx].fr_refcnt == 0) {
-		pdePtr->pd_pres = 0;
-	}
-
-	return OK;
-
-}
-
-
-int isAccSet(int idx) {
-	int vpn = frm_tab[idx].fr_vpno;
-	
-	unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vpn>>10;
-        unsigned long pageNumber = (vpn<<10)>>10;
-	
-        unsigned long pdeAddress = pdbr + 4*ptNumber;
+	int vp = faultingPage>>12;
+	unsigned long pdbrCurrentProcess = proctab[currpid].pdbr;
+	unsigned int ptNumber = faultingPage>>22;
+	unsigned int pageNumber = (faultingPage & 0x3FF000)>>12;
+	unsigned int offset = (faultingPage<<20)>>20;
+	kprintf("\nVirtual Page Translation\n");
+	unsigned long pdeAddress = pdbrCurrentProcess + 4*ptNumber;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
 	
-	unsigned int pt =  pdePtr->pd_base*NBPG;
-	pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
-	if (ptePointer->pt_acc == 0) {
-		return idx;
+	if (pdePtr->pd_pres == 0) {
+		//create new page table for process
+		//mark pd_pres = 1
+		//add location of pt to pd_base
+		int framePointer = 0;
+		if (get_frm(&framePointer) == SYSERR) {
+ 	             	//kill(getpid());
+                 	return SYSERR;
+	        }
+		int idx = (int) (framePointer)/NBPG - FRAME0;
+		frm_tab[idx].fr_status = 1;
+		frm_tab[idx].fr_type = FR_TBL;
+		frm_tab[idx].fr_pid = getpid();
+		pdePtr->pd_pres = 1;
+		pdePtr->pd_write = 1;
+		pdePtr->pd_base = (int) framePointer/NBPG;
 	}
-	
-	ptePointer->pt_acc = 0;
-	return -1;
-	
-}
-
-/*
-int markIfDirty(int idx) {
-        int vpn = frm_tab[idx].fr_vpno;
-
-        unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vpn>>10;
-        unsigned long pageNumber = (vpn<<10)>>10;
-
-        unsigned long pdeAddress = pdbr + 4*ptNumber;
-        pd_t *pdePtr = (pd_t*) pdeAddress;
-
-        unsigned int pt =  pdePtr->pd_base*NBPG;
-        pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
-        if (ptePointer->pt_dirty == 1) {
-		frm_tab[idx].fr_dirty = 1;
-        }
-	else
-		frm_tab[idx].fr_dirty = 0;
-
-        return OK;
-
-}*/
-
-
-
-
-int writeBackDirtyFrames(int pid) {
-
-	int i = 0;
-	for (; i < 1024; i++) {
-		//kprintf("Going to MID for pid-%d\n", pid);
-		if (frm_tab[i].fr_pid == pid && frm_tab[i].fr_type == FR_PAGE) {
-//			kprintf("TYPE=%d ID=%d", frm_tab[i].fr_type, i);
-			markIfDirty(i);
-		}
-		//kprintf("1\n");
-		if (frm_tab[i].fr_status == 1 && frm_tab[i].fr_pid == pid && frm_tab[i].fr_dirty == 1 && frm_tab[i].fr_type == FR_PAGE) {
-			kprintf("2\n");
-			if (writeDirtyFrame(i) == SYSERR) {
-				kprintf("3\n");
-				return SYSERR;
-			}
-		}
+	//kprintf("\nThrough Case A\n");
+	int idx = (pdePtr->pd_base) - FRAME0;
+	frm_tab[idx].fr_refcnt++;
+	int framePointer = 0;
+	if (get_frm(&framePointer) == SYSERR) {
+		//kill(getpid());
+		return SYSERR;
 	}
-//	kprintf("Returniing from wBDF\n");
-	return OK;
-
-
-}
-
-
-int writeDirtyFrame(int i) {
-
-		int store, pageth; 
-                if (bsm_lookup(frm_tab[i].fr_pid, frm_tab[i].fr_vpno*NBPG /*(vaddr)*/, &store, &pageth) == SYSERR) {
-                        return SYSERR;
-                }   
-                char *pointerToSrc = (FRAME0 + i)*NBPG;
-                write_bs(pointerToSrc, store, pageth);
-                //dirty no more
-                frm_tab[i].fr_dirty = 0;
-		return OK;
-}
-
-
-
-int removeFramesOnKill(int pid) {
-
-	struct scq *p = &scqhead;
-	struct scq *q = p->next;
-	
-	while (1) {
-		kprintf("\nHere1\n");
-		if (q == &scqhead) {
-			return OK;
-		}
-
-		if (frm_tab[q->idx].fr_pid == pid) {
-			q = q->next;
-			p->next = q;
-		}
-		else {
-			p = p->next;
-			q = q->next;
-		}
-
+	idx = (framePointer)/NBPG - FRAME0;
+	frm_tab[idx].fr_status = 1;
+	frm_tab[idx].fr_type = FR_PAGE;
+	frm_tab[idx].fr_pid = getpid();
+	frm_tab[idx].fr_vpno = vp;
+	frm_tab[idx].fr_dirty = 0;
+	// do we need to update ref_cnt here???!?
+	if (grpolicy() != AGING) {
+		struct scq frameToInsert;
+		frameToInsert.idx = idx;
+			
+		struct scq *tmp = scPointer->next;
+		scPointer->next = &frameToInsert;
+		frameToInsert.next = tmp;
+		scPointer = frameToInsert.next;
+		//insert into scq
+		//also delete in get_frm whenever reading from scq
+		
 		
 	}
-	return SYSERR;
+	else {
+		struct fifo frameToInsert;
+                frameToInsert.idx = idx;
+		frameToInsert.age = 255;
 
-}
-
-
-/*-------------------------------------------------------------------------
- * free_frm - free a frame 
- *-------------------------------------------------------------------------
- */
-SYSCALL free_frm(int i)
-{
-	kprintf("\nFrame ID being replaced: %d", i);
-	frm_tab[i].fr_status = 0;
-        frm_tab[i].fr_vpno = -1;
-	
-	if (frm_tab[i].fr_dirty == 1) {
-		writeDirtyFrame(i);
-/*
-		//copy back to bs
-		int *store, *pageth; 
-			return SYSERR;
-		}
-
-
-		char *pointerToSrc = (char*)(FRAME0 + i)*NBPG;
-		write_bs(pointerToSrc, *store, *pageth);
-		//dirty no more
-		frm_tab[i].fr_dirty = 0;
-*/
+		frameToInsert.next = fifohead.next;
+		fifohead.next = &frameToInsert;
 	}
-	frm_tab[i].fr_pid = -1;
-	// unmap
-	// if dirty write back to bs
+	kprintf("\nFrame ID Being used for PF%d\n", (int) framePointer/NBPG);
+	/*
+        if (bsm_lookup(currpid, faultingPage, &store, &pageth) == SYSERR) {
+                kprintf("BSM LOOKUP FAILING\n");
+                return SYSERR;
+        }*/
 
+	read_bs( (char*)framePointer, store, pageth);
+	
+	unsigned long pteAddress = pdePtr->pd_base*NBPG + 4*pageNumber;
+	pt_t *ptePtr = pteAddress;
+	ptePtr->pt_pres = 1;
+	ptePtr->pt_write = 1;
+	ptePtr->pt_base = (int) framePointer/NBPG;
+	kprintf("\nDone with PF for currpid-%d\n", getpid());
+
+	write_cr3(pdbrCurrentProcess);
 	return OK;
 }
 
-
-int markIfDirty(int idx) {
-        int vpn = frm_tab[idx].fr_vpno;
-//	kprintf("pid-%d frameId-%d\n", frm_tab[idx].fr_pid, idx);
-        unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vpn>>10;
-        unsigned long pageNumber = (vpn<<10)>>10;
-
-        unsigned long pdeAddress = pdbr + 4*ptNumber;
-        pd_t *pdePtr = pdeAddress;
-
-        unsigned int pt =  pdePtr->pd_base*NBPG;
-        pt_t *ptePointer = pt + 4*pageNumber;
-        if (ptePointer->pt_dirty == 1) {
-  //              kprintf("FRAMEID-%d is DIRTY\n", idx);
-		frm_tab[idx].fr_dirty = 1;
-        }
-        else
-                frm_tab[idx].fr_dirty = 0;
-
-        return OK;
-
-}
 
