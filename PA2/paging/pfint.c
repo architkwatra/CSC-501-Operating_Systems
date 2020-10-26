@@ -41,12 +41,14 @@ SYSCALL pfint()
 		//mark pd_pres = 1
 		//add location of pt to pd_base
 		kprintf("\n creaing a new page table and CALLING get_frm from pfint.c\n");
-		if (get_frm(&framePointer) == SYSERR) {
+		
+		int idx = get_frm(&framePointer);
+		if (idx == SYSERR) {
  	             	// kill(getpid());
 					kprintf("\nFFFFFFFFFFFFFF\n");
                  	return SYSERR;
 	        }
-		int idx = (framePointer)/NBPG - FRAME0;
+		
 		frm_tab[idx].fr_status = 1;
 		frm_tab[idx].fr_type = FR_TBL;
 		frm_tab[idx].fr_pid = getpid();
