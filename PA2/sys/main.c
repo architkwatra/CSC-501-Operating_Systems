@@ -39,6 +39,7 @@ void proc1_test1(char *msg, int lck) {
 }
 
 void proc1_test2(char *msg, int lck) {
+	kprintf("PROC1_TEST2 has started running now");
 	int *x;
 
 	kprintf("ready to allocate heap space\n");
