@@ -89,12 +89,12 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
                return SYSERR;
         }
 	kprintf("get_frm returned frame = %d and address = %d", t, freeFramePointer);
-	proctab[pid].pdbr = freeFramePointer;
+	pptr->pdbr = freeFramePointer;
 	int frameId = t/*((int)freeFramePointer)/NBPG - FRAME0*/;
 	frm_tab[frameId].fr_status = 1;
 	frm_tab[frameId].fr_pid = pid;
 	frm_tab[frameId].fr_type = FR_DIR;
-	frm_tab[frameId].fr_vpno = (int)procaddr/NBPG;
+	//frm_tab[frameId].fr_vpno = (int)procaddr/NBPG;
 	
 	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
 	int j = 0;
