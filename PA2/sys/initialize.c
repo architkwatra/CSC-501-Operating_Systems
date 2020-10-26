@@ -239,13 +239,12 @@ sysinit()
 	frm_tab[0].fr_type = FR_DIR;
 	
 	i = 0;
-	while (i < 1024) {
+	while (i < 4) {
 		ptr->pd_write = 1;
-		if (i < 4) {
-			ptr->pd_pres = 1;
-			// (i + FRAME0 + 1) = 1024 + i(=0) + 1 = 1025 
-			ptr->pd_base = (i + FRAME0 + 1);
-		}		
+		ptr->pd_pres = 1;
+		// (i + FRAME0 + 1) = 1024 + i(=0) + 1 = 1025 
+		ptr->pd_base = (i + FRAME0 + 1);
+				
 		ptr++;
 		i++;
 	}
