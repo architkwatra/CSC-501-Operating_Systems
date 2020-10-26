@@ -91,8 +91,6 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	frm_tab[frameId].fr_type = FR_DIR;
 	frm_tab[frameId].fr_vpno = (int)procaddr>>12;
 
-	pptr->pdbr = &freeFramePointer;
-	
 	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
 	int j = 0;
 	while (j < 4) {
