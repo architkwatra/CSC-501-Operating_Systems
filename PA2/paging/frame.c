@@ -8,8 +8,6 @@
 #include <proc.h>
 #include <paging.h>
 
-static unsigned long *eax;
-
 /*-------------------------------------------------------------------------
  * init_frm - initialize frm_tab
  *-------------------------------------------------------------------------
@@ -57,16 +55,10 @@ SYSCALL get_frm(int* avail)
 			*avail = (FRAME0 + i)*NBPG;
 			//can I do avail = &frm_tab[i]???
 			restore(ps);
-			kprintf("Returning i = %d and *avail = %d\n", i, *avail);
 			return i;
 		}
 		i++;
 	}
-	
-	//extern struct scPolicyStruct scHead;
-	//extern struct agingPolicyStruct agingHead;
-	//extern scPolicyStruct *scHeadPointer;
-
 
 	//This gives the frame which should be swapped out
 	int frameNumber = -1;
@@ -76,9 +68,7 @@ SYSCALL get_frm(int* avail)
 		struct fifo *minprev = q;	
 		int min = 256;
 		while (p != NULL) {
-
 			p->age = p->age>>1;
-			
 			if (isAccSet(p->idx) != -1) {
 				if (p->age + 128 > 255)
 					p->age = 255;
@@ -98,7 +88,7 @@ SYSCALL get_frm(int* avail)
 		markPTENonExistent(idx);
 		*avail = (FRAME0 + idx)*NBPG;	
 		
-		return OK;
+		return idx;
 	}
 	
 	else if (currentPolicy == SC) {
@@ -118,7 +108,7 @@ SYSCALL get_frm(int* avail)
 				//deleting node from scq
 				scPointer->next = (scPointer->next)->next;
 				restore(ps);
-				return OK;
+				return idx;
 			}
 			
 			scPointer = scPointer->next;
@@ -144,6 +134,14 @@ SYSCALL free_frm(int i)
 	
 }
 
+
+
+
+
+
+
+
+static unsigned long *eax;
 
 int markPTENonExistent(int frameNumber) {
 
