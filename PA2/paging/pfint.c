@@ -44,7 +44,7 @@ SYSCALL pfint()
 					kprintf("\nFFFFFFFFFFFFFF\n");
                  	return SYSERR;
 	        }
-		int idx = (int) (framePointer)/NBPG - FRAME0;
+		
 		frm_tab[idx].fr_status = 1;
 		frm_tab[idx].fr_type = FR_TBL;
 		frm_tab[idx].fr_pid = getpid();
@@ -63,7 +63,7 @@ SYSCALL pfint()
 		return SYSERR;
 	}
 	kprintf("\n2222222222222222222\n");
-	idx = (int)(framePointer)/NBPG - FRAME0;
+	//idx = (int)(framePointer)/NBPG - FRAME0;
 	frm_tab[idx].fr_status = 1;
 	frm_tab[idx].fr_type = FR_PAGE;
 	frm_tab[idx].fr_pid = getpid();
@@ -97,6 +97,7 @@ SYSCALL pfint()
 	
 	unsigned long pteAddress = pdePtr->pd_base*NBPG + 4*pageNumber;
  	pt_t *ptePtr = (pt_t*) pteAddress;
+	kprintf("\npteAddress = %lu\n", pteAddress);
 	ptePtr->pt_pres = 1;
 	// ptePtr->pt_write = 1;
 	ptePtr->pt_base = (int)framePointer/NBPG;
