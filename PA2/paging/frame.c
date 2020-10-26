@@ -50,7 +50,6 @@ SYSCALL get_frm(int* avail)
 			//and after that adding i will give the free frame
 			*avail = (FRAME0 + i)*NBPG;
 			//can I do avail = &frm_tab[i]???
-			kprintf("\nInside the get_frm() and *avail = %d and i = %d\n", *avail, i);
 			return i;
 		}
 		i++;

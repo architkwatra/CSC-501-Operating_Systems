@@ -139,7 +139,6 @@ int writeBackDirtyFrames(int pid) {
 
 	int i = 0;
 	while (i < NFRAMES) {
-		markIfDirty(i);
 		if (frm_tab[i].fr_pid == pid && frm_tab[i].fr_type == FR_PAGE) {
 			markIfDirty(i);
 		}
