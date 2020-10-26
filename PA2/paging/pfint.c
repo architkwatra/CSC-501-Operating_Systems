@@ -3,7 +3,7 @@
 #include <conf.h>
 #include <kernel.h>
 #include <paging.h>
-
+#include<proc.h>
 int i = 0;
 
 /*-------------------------------------------------------------------------
@@ -28,7 +28,7 @@ SYSCALL pfint()
 	}	
 	kprintf("\nXXXXXXXXXXXX\n");
 	int vp = faultingPage>>12;
-	unsigned long pdbrCurrentProcess = read_cr3();
+	unsigned long pdbrCurrentProcess = proctab[currpid].pdbr;
 	unsigned long ptNumber = faultingPage>>22;
 	unsigned long pageNumber = (faultingPage & 0x3FF000)>>12;
 	unsigned long offset = (faultingPage<<20)>>20;
@@ -53,23 +53,26 @@ SYSCALL pfint()
 		frm_tab[idx].fr_type = FR_TBL;
 		frm_tab[idx].fr_pid = getpid();
 		pdePtr->pd_pres = 1;
+		//pdePtr->pd_write = 1;
 		pdePtr->pd_base = (int)framePointer/NBPG;
 		kprintf("\nEEEEEEEEEEEEEE\n");
 	}
 	kprintf("\n1111111111111111\n");
 	int idx = pdePtr->pd_base - FRAME0;
 	frm_tab[idx].fr_refcnt++;
-	if (get_frm(&framePointer) == SYSERR) {
+	idx = get_frm(&framePointer);
+	if (idx == SYSERR) {
 		// kill(getpid());
 		kprintf("\nZZZZZZZZZZZZZZZZZZzz\n");
 		return SYSERR;
 	}
 	kprintf("\n2222222222222222222\n");
-	idx = (int)(framePointer)/NBPG - FRAME0;
+	//idx = (int)(framePointer)/NBPG - FRAME0;
 	frm_tab[idx].fr_status = 1;
 	frm_tab[idx].fr_type = FR_PAGE;
 	frm_tab[idx].fr_pid = getpid();
 	frm_tab[idx].fr_vpno = vp;
+	frm_tab[idx].fr_dirty = 0;
 	kprintf("\n33333333333333\n");
 	// do we need to update ref_cnt here???!?
 	if (grpolicy() != AGING) {
@@ -94,13 +97,15 @@ SYSCALL pfint()
 	}
 
 	kprintf("\n5555555555\n");
-	read_bs( (char*)framePointer, &store, &pageth);
+	read_bs( (char*)framePointer, store, pageth);
 	
 	unsigned long pteAddress = pdePtr->pd_base*NBPG + 4*pageNumber;
  	pt_t *ptePtr = (pt_t*) pteAddress;
 	ptePtr->pt_pres = 1;
+	// ptePtr->pt_write = 1;
 	ptePtr->pt_base = (int)framePointer/NBPG;
 	kprintf("\nRETURNING FROM PFINT.c\n");
+	write_cr3(pdbrCurrentProcess);
 	return OK;
 }
 
