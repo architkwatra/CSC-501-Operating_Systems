@@ -8,6 +8,8 @@
 #include <proc.h>
 #include <paging.h>
 
+static unsigned long *eax;
+
 /*-------------------------------------------------------------------------
  * init_frm - initialize frm_tab
  *-------------------------------------------------------------------------
@@ -142,14 +144,6 @@ SYSCALL free_frm(int i)
 	
 }
 
-
-
-
-
-
-
-
-static unsigned long *eax;
 
 int markPTENonExistent(int frameNumber) {
 
