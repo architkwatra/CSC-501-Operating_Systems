@@ -124,7 +124,7 @@ SYSCALL free_frm(int i)
 void getTranslatedAddress(virt_addr_t *a) {
 		return a;
 } 
-
+static unsigned long *tlb;
 int setPdPres(int frameNumber) {
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[frameNumber].fr_vpno;
 	// unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
@@ -133,7 +133,7 @@ int setPdPres(int frameNumber) {
 	pd_t *pdePtr = (pt_t*)(proctab[frm_tab[frameNumber].fr_pid].pdbr + sizeof(pt_t)*vAddrStruct->pd_offset);
 	pt_t *ptePtr = pdePtr->pd_base*4096 + sizeof(pt_t)*vAddrStruct->pt_offset;
 	ptePtr->pt_pres = 0;
-	static unsigned long *tlb;
+	
 	frm_tab[frameNumber].fr_refcnt = frm_tab[frameNumber].fr_refcnt - 1;
 	if (frm_tab[frameNumber].fr_pid == getpid()) {
 		tlb = frm_tab[frameNumber].fr_vpno*NBPG;
