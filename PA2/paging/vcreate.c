@@ -29,8 +29,7 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 					/* array in the code)		*/
 {
 	STATWORD ps;
-	struct mblock *mptr;
-	
+
 	int pid = create(procaddr,ssize,priority,name,nargs,args);
 	disable(ps);
 	struct pentry *ptr = &proctab[pid];
@@ -48,24 +47,23 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 		deleteCreatedTableData(pid);	
 		return SYSERR;
 	}
+
 	int vaddress = (int)procaddr>>12;
 	int check = bsm_map(pid, vaddress, emptyStore, hsize);
 	if (check == SYSERR)
 		return SYSERR;
 
 	bsm_tab[emptyStore].bs_isPrivate = 1;
-
-	ptr = &proctab[pid];
-	(ptr->vmemlist)->mnext = (struct mblock*) BACKING_STORE_BASE + emptyStore*BACKING_STORE_UNIT_SIZE;
-	if (ptr) ptr->vhpnpages = hsize;
-
-	if (mptr) {
-		mptr = (ptr->vmemlist)->mnext;	
-		mptr->mlen = hsize*NBPG;
-		mptr->mnext = NULL;
-	}
+	struct mblock *mptr;
+	(proctab[pid].vmemlist)->mnext = mptr = (struct mblock*) BACKING_STORE_BASE + emptyStore*BACKING_STORE_UNIT_SIZE;
+	proctab[pid].vhpnpages = hsize;
+	mptr->mlen = hsize*NBPG;
+	mptr->mnext = 0;
+		
 	restore(ps);
-	return pid;	
+	return pid;
+
+		
 }
 
 /*------------------------------------------------------------------------
