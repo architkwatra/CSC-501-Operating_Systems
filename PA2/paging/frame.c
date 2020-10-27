@@ -126,7 +126,7 @@ SYSCALL free_frm(int i)
 	ptr->fr_status = 0;
 	ptr->fr_pid = -1;
 	if (ptr->fr_dirty) {
-		writeBackBS(i);
+		writeDF(i);
 	}
 	return OK;
 }
