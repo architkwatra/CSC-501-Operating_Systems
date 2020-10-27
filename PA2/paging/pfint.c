@@ -89,17 +89,17 @@ SYSCALL pfint()
 	
 	int store, pageth;
 	int temp = bsm_lookup(getpid(), faultingPage, &store, &pageth);
-	if (pageth < 0)
-		kprintf("222222222222 --------- store = %d and pageth = %d in pfint\n", store, pageth);
+	if (temp < 0)
+		kprintf("222------store = %d, pageth = %d and temp = %din pfint\n", store, pageth, temp);
 	if (temp == SYSERR) {
 		// kill(getpid());
 		kprintf("\nBSM LOOKUP FAILED\n");
 		return SYSERR;
 	}
 	// kprintf("\n5555555555\n");
-	read_bs( (char*)framePointer, store, temp);
+	read_bs( (char*)framePointer, store, pageth);
 	
-	unsigned long pteAddress = pdePtr->pd_base*NBPG + 4*pageNumber;
+	unsigned long pteAddress = pdePtr->pd_base*NBPG + offset + 4*pageNumber;
  	pt_t *ptePtr = (pt_t*) pteAddress;
 	// kprintf("\npteAddress = %lu\n", pteAddress);
 	ptePtr->pt_pres = 1;

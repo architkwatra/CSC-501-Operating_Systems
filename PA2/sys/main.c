@@ -232,6 +232,7 @@ void proc1_test4(int* ret) {
 	for (i = 0; i < 26; i++) {
 		/*expected output is abcde.....*/
 		if (*(addr + i * NBPG) != 'a'+i){
+			kprintf("A+i at address %x and value = %c\n", addr+i*NBPG, (*(addr+i*NBPG)));
 			kprintf("Failed 2\n");
 			*ret = TFAILED;
 			break;
