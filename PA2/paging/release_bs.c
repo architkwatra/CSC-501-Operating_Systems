@@ -24,6 +24,7 @@ SYSCALL release_bs(bsd_t bs_id) {
 		if (free_bsm((int)bs_id) == SYSERR) {
 			return SYSERR;
 		}
+	}
 	checkAndCallFreeBSM(bs_id);
 	proctab[getpid()].store = -1;
 	return OK;
