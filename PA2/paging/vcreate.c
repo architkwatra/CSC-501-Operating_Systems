@@ -55,7 +55,6 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 		mptr->mnext = 0;
 		
 	} else {
-		kprintf("FAIL 2\n");
 		deleteCreatedTableData(pid);	
 		return SYSERR;
 	}

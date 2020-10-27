@@ -18,12 +18,10 @@ SYSCALL release_bs(bsd_t bs_id) {
 		int count = 0;
 		while (i < NPROC) {
 			if (proctab[i].store == bs_id && getpid() != i && getpid() != 49) { 
-				//kprintf("release_bs, i = %d and bs_id = %d\n", i, bs_id);
 				count++;
 			}
 			++i;
 		}
-		//kprintf("Final count = %d\n", count);
 		if (count == 0)
 			free_bsm((int)bs_id);
 	}

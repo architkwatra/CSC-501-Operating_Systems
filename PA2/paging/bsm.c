@@ -5,6 +5,7 @@
 #include <paging.h>
 #include <proc.h>
 
+#define MAX_BSTORE 8
 /*-------------------------------------------------------------------------
  * init_bsm- initialize bsm_tab
  *-------------------------------------------------------------------------
@@ -12,7 +13,7 @@
 SYSCALL init_bsm()
 {
 	 int i = 0;
-    while (i < 8) {
+    while (i < MAX_BSTORE) {
 		bsm_tab[i].bs_status = 0;
 		bsm_tab[i].bs_pid = -1;
 		bsm_tab[i].bs_vpno = -1;
@@ -29,9 +30,9 @@ SYSCALL init_bsm()
 SYSCALL get_bsm(int* avail)
 {
 	int i = 0;
-	while (i < 8) {
-		//add pointer	
-		if (bsm_tab[i].bs_status == 0) {
+	while (i < MAX_BSTORE) {
+		bs_map_t *ptr = &bsm_tab[i];
+		if (!ptr->bs_status) {
 			*avail = i;
 			return i;	
 		}
@@ -62,20 +63,13 @@ SYSCALL free_bsm(int i)
  */
 SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 {
-	struct pentry *ptr = &proctab[pid];
-	
-	if (ptr->store >= 0 && ptr->store < 8) {
+	struct pentry *ptr = &proctab[pid];	
+	if (ptr->store >= 0 && ptr->store < MAX_BSTORE) {
+		
 		*store = ptr->store;
 		int a = (unsigned int) vaddr/NBPG;
-		//kprintf("a == %d\n", a);
 		int b = ptr->vhpno;
-		//kprintf("b == %d\n", b);
 		*pageth = (unsigned int) (a-b);
-		//if (*pageth < 0) 
-		//	*pageth = b+a;
-		//kprintf("*pageth = %d\n", *pageth);
-		//*pageth = (unsigned int) ((vaddr/NBPG) - ptr->vhpno);
-		
 		return *pageth;
 	}
 	return SYSERR;
@@ -88,12 +82,14 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
  */
 SYSCALL bsm_map(int pid, int vpno, int source, int npages)
 {
-	bsm_tab[source].bs_status = 1;
-	bsm_tab[source].bs_pid = pid;
-	bsm_tab[source].bs_vpno = vpno;
-	proctab[pid].vhpno = vpno;
-	bsm_tab[source].bs_npages = npages;
+	bs_map_t *ptr = &bsm_tab[source];
+	ptr->bs_status = 1;
+	ptr->bs_pid = pid;
 	proctab[pid].store = source;
+	ptr->bs_npages = npages;	
+	ptr->bs_vpno = vpno;
+	proctab[pid].vhpno = vpno;
+	
 }
 
 
@@ -108,10 +104,11 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
 		int i = 0;
                 int count = 0;
                 while (i < NPROC) {
-                        if (proctab[i].store == proctab[pid].store && pid != i)
+                        if (proctab[i].store == proctab[pid].store && pid != i && i != 49)
                                 count++;
                         ++i;
                 }
+
                 if (count == 0)
                         free_bsm((int)proctab[pid].store);
         }
