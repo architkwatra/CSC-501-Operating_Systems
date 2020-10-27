@@ -104,7 +104,7 @@ void proc0_test3(char *msg, int lck) {
 void test0() {
 
 	int pid1;
-	int pid2;
+	int pid2, pid3;
 
 	kprintf("\n1: shared memory\n");
 	pid1 = create(proc0_test1, 2000, 20, "proc0_test1", 0, NULL);
@@ -112,15 +112,20 @@ void test0() {
 	sleep(10);
 
 	kprintf("\n2: vgetmem/vfreemem\n");
-	pid1 = vcreate(proc0_test2, 2000, 100, 20, "proc0_test2", 0, NULL);
-	kprintf("pid %d has private heap\n", pid1);
-	resume(pid1);
+	pid2 = vcreate(proc0_test2, 2000, 100, 20, "proc0_test2", 0, NULL);
+	kprintf("pid %d has private heap\n", pid2);
+	resume(pid2);
 	sleep(3);
 
 	kprintf("\n3: Frame test\n");
-	pid1 = create(proc0_test3, 2000, 20, "proc0_test3", 0, NULL);
-	resume(pid1);
+	pid3 = create(proc0_test3, 2000, 20, "proc0_test3", 0, NULL);
+	resume(pid3);
 	sleep(3);
+
+	kill(pid1);
+	kill(pid2);
+	kill(pid3);
+
 }
 
 
