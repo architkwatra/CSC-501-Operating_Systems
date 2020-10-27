@@ -71,7 +71,7 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 			kprintf("1111111111111 ------ vaddr = %lu amnd vhpno = %d and *pageth = %d\n", vaddr, ptr->vhpno, *pageth);
 		}
 		//kprintf("vaddr = %lu amnd vhpno = %d and *pageth = %d\n", vaddr, ptr->vhpno, *pageth);
-		return OK;
+		return *pageth;
 	}
 	return SYSERR;
 }
