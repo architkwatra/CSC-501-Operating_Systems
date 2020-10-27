@@ -115,6 +115,7 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
 	if (bsm_tab[proctab[pid].store].bs_isPrivate == 0) {
 		freeBsm(0, pid);
 		proctab[pid].store = -1;
+	}
 }
 
 
