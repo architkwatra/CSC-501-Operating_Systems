@@ -89,7 +89,7 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
 	ptr->bs_npages = npages;	
 	ptr->bs_vpno = vpno;
 	proctab[pid].vhpno = vpno;
-	
+	return OK;	
 }
 
 
@@ -101,14 +101,13 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
 
 void freeBsm(int count, int pid) {
 	int i = 1;
-		while (i < NPROC-1) {
-				if (proctab[i].store == proctab[pid].store && pid != i)
-						count += 1;
-				++i;			
-		}
-		if (count == 0)
-				free_bsm((int)proctab[pid].store);
-        }
+	while (i < NPROC-1) {
+			if (proctab[i].store == proctab[pid].store && pid != i)
+					count += 1;
+			++i;			
+	}
+	if (count == 0) free_bsm((int)proctab[pid].store);
+}
 
 SYSCALL bsm_unmap(int pid, int vpno, int flag)
 {

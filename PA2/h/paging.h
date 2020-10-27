@@ -81,10 +81,11 @@ extern struct scq *scPointer;
 //int removeFramesOnKill(int); 
 int writeBackBS(int); 
 int writeBackDF(int);
+
 // int markIfDirty(int); 
 // int isAccSet(int);
 
-
+void freeBsm(int, int);
 
 extern bs_map_t bsm_tab[];
 extern fr_map_t frm_tab[];

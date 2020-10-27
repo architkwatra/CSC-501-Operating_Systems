@@ -29,7 +29,8 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 					/* array in the code)		*/
 {
 	STATWORD ps;
-
+	struct mblock *mptr;
+	
 	int pid = create(procaddr,ssize,priority,name,nargs,args);
 	disable(ps);
 	struct pentry *ptr = &proctab[pid];
@@ -42,26 +43,29 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	ptr->isPrivate = 1;
 
 	//get_bsm will return a free entry from bsm_tab by checking its status
-	int freeStore = get_bsm(NULL);
-	if (freeStore != SYSERR) {
-		bsm_map(pid, (int)procaddr>>12, freeStore, hsize);
-		bsm_tab[freeStore].bs_isPrivate = 1;
-		struct mblock *mptr;
-
-
-		(proctab[pid].vmemlist)->mnext = mptr = (struct mblock*) BACKING_STORE_BASE + freeStore*BACKING_STORE_UNIT_SIZE;
-		proctab[pid].vhpnpages = hsize;
-		mptr->mlen = hsize*NBPG;
-		mptr->mnext = 0;
-		
-	} else {
+	int emptyStore = get_bsm(NULL);
+	if (emptyStore == SYSERR) {
 		deleteCreatedTableData(pid);	
 		return SYSERR;
 	}
-	restore(ps);
-	return pid;
+	int vaddress = (int)procaddr>>12;
+	int check = bsm_map(pid, vaddress, emptyStore, hsize);
+	if (check == SYSERR)
+		return SYSERR;
 
-		
+	bsm_tab[emptyStore].bs_isPrivate = 1;
+
+	struct pentry *ptr = &proctab[pid];
+	(ptr->vmemlist)->mnext = (struct mblock*) BACKING_STORE_BASE + emptyStore*BACKING_STORE_UNIT_SIZE;
+	if (ptr) ptr->vhpnpages = hsize;
+
+	if (mptr) {
+		mptr = (ptr->vmemlist)->mnext;	
+		mptr->mlen = hsize*NBPG;
+		mptr->mnext = NULL;
+	}
+	restore(ps);
+	return pid;	
 }
 
 /*------------------------------------------------------------------------
