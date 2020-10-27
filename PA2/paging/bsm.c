@@ -98,23 +98,23 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
  * bsm_unmap - delete an mapping from bsm_tab
  *-------------------------------------------------------------------------
  */
+
+void freeBsm(int count, int pid) {
+	int i = 1;
+		while (i < NPROC-1) {
+				if (proctab[i].store == proctab[pid].store && pid != i)
+						count += 1;
+				++i;			
+		}
+		if (count == 0)
+				free_bsm((int)proctab[pid].store);
+        }
+
 SYSCALL bsm_unmap(int pid, int vpno, int flag)
 {
 	if (bsm_tab[proctab[pid].store].bs_isPrivate == 0) {
-		int i = 0;
-                int count = 0;
-                while (i < NPROC) {
-                        if (proctab[i].store == proctab[pid].store && pid != i && i != 49)
-                                count++;
-                        ++i;
-                }
-
-                if (count == 0)
-                        free_bsm((int)proctab[pid].store);
-        }
-	
+		freeBsm(0, pid);
 		proctab[pid].store = -1;
-	
 }
 
 
