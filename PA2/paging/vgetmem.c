@@ -27,8 +27,9 @@ WORD	*vgetmem(nbytes)
 		kprintf("111 ----- Returning SYSERR from vgetmen\n");
                 return( (WORD *)SYSERR);
         }
+	kprintf("vmemlist points at %x\n", proctab[getpid()].vmemlist->mnext);
         nbytes = (unsigned int) roundmb(nbytes);
-        for (q = proctab[getpid()].vmemlist,p=(proctab[getpid()].vmemlist->mnext) ;
+        for (q = proctab[getpid()].vmemlist, p=(proctab[getpid()].vmemlist->mnext) ;
              p != (struct mblock *) NULL ;
              q=p,p=p->mnext)
                 if ( p->mlen == nbytes) {

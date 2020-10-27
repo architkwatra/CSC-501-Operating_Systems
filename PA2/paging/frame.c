@@ -50,10 +50,7 @@ SYSCALL get_frm(int* avail)
 	int i = 0;
 	while (i < NFRAMES) {
 		if (frm_tab[i].fr_status == 0) {
-			//FRAME0 will give the frame till kernel memory 
-			//and after that adding i will give the free frame
 			*avail = (FRAME0 + i)*NBPG;
-			//can I do avail = &frm_tab[i]???
 			restore(ps);
 			return i;
 		}
@@ -135,27 +132,28 @@ SYSCALL free_frm(int i)
 }
 
 
-
-
-
-
-
-
 static unsigned long *eax;
 
 int markPTENonExistent(int frameNumber) {
 
-	int vpn = frm_tab[frameNumber].fr_vpno;
+	/*int vpn = frm_tab[frameNumber].fr_vpno;
 	unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
 	unsigned long ptNumber = vpn >> 10;
 	unsigned long pageNumber = (vpn << 10) >> 10;
+	*/
+
+	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[frameNumber].fr_vpno;
+        unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
+        unsigned long ptNumber = vAddrStruct->pd_offset;
+        unsigned long pageNumber = vAddrStruct->pt_offset;
+
 	pd_t *pdePtr = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
 	pt_t *ptePointer = pdePtr->pd_base*4096 + sizeof(pt_t)*pageNumber;
 	ptePointer->pt_pres = 0;
 	
 	if (getpid() == frm_tab[frameNumber].fr_pid) {
 		//static unsigned long *eax;
-		eax = vpn*NBPG;
+		eax = frm_tab[frameNumber].fr_vpno*NBPG;
 		asm("invlpg eax");	
 	}
 	
@@ -166,15 +164,20 @@ int markPTENonExistent(int frameNumber) {
 }
 
 int isAccSet(int idx) {
-	int vpn = frm_tab[idx].fr_vpno;
+	/*int vpn = frm_tab[idx].fr_vpno;
 	
 	unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
         unsigned long ptNumber = vpn>>10;
         unsigned long pageNumber = (vpn<<10)>>10;
+	*/
+
+	virt_addr_t *vAddrStruct = (virt_addr_t*)&frm_tab[idx].fr_vpno;
+        unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
+        unsigned long ptNumber = vAddrStruct->pd_offset;
+        unsigned long pageNumber = vAddrStruct->pt_offset;
         unsigned long pdeAddress = pdbr + 4*ptNumber;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
-	
-	unsigned int pt =  pdePtr->pd_base*NBPG;
+	unsigned int pt = pdePtr->pd_base*NBPG;
 	pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
 	if (ptePointer->pt_acc == 0) {
 		return idx;
@@ -187,11 +190,11 @@ int isAccSet(int idx) {
 
 
 int markIfDirty(int idx) {
-        int vpn = frm_tab[idx].fr_vpno;
-
+        //int vpn = frm_tab[idx].fr_vpno;
+	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[idx].fr_vpno;
         unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vpn>>10;
-        unsigned long pageNumber = (vpn<<10)>>10;
+        unsigned long ptNumber = vAddrStruct->pd_offset;
+        unsigned long pageNumber = vAddrStruct->pt_offset;
 
         unsigned long pdeAddress = pdbr + 4*ptNumber;
         pd_t *pdePtr = (pd_t*) pdeAddress;
@@ -222,7 +225,6 @@ int writeBackDirtyFrames(int pid) {
 			}
 		}
 
-
 		i++;
 	}
 	return OK;
@@ -231,7 +233,7 @@ int writeBackDirtyFrames(int pid) {
 int writeDirtyFrame(int i) {
 
 		int store, pageth; 
-                if (bsm_lookup(frm_tab[i].fr_pid, frm_tab[i].fr_vpno*NBPG /*(vaddr)*/, &store, &pageth) == SYSERR) {
+                if (bsm_lookup(frm_tab[i].fr_pid, frm_tab[i].fr_vpno*NBPG /*(vaddr)*/, store, pageth) == SYSERR) {
                         kill(frm_tab[i].fr_pid);
                         return SYSERR;
                 }   

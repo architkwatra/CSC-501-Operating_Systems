@@ -19,12 +19,18 @@ SYSCALL pfint()
 	// kprintf("\nXXXXXXXXXXXX\n");
 	
 	int vp = faultingPage>>12;
+	
+	virt_addr_t *vAddrStruct = (virt_addr_t*)&faultingPage;
+
 	unsigned long pdbrCurrentProcess = proctab[currpid].pdbr;
-	unsigned long ptNumber = faultingPage>>22;
-	unsigned long pageNumber = (faultingPage & 0x3FF000)>>12;
-	unsigned long offset = (faultingPage<<20)>>20;
+
+	unsigned long ptNumber = vAddrStruct->pd_offset;
+	unsigned long pageNumber = vAddrStruct->pt_offset;
+	//unsigned long offset = vAddrStruct->pg_offset;
+
 	unsigned long pdeAddress = pdbrCurrentProcess + 4*ptNumber;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
+
 	int framePointer;
 	// kprintf("\nDDDDDDDDDDDDDDD\n");
 	if (pdePtr->pd_pres == 0) {
