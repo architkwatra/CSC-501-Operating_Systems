@@ -61,27 +61,6 @@ typedef struct{
 
 }fr_map_t;
 
-
-// struct scPolicyStruct {
-// 	struct scolicy *next;
-// 	int frameNumber;
-// };
-
-// struct agingPolicyStruct {
-// 	int age;
-// 	int frameNumber;
-// 	struct agingPolicyStruct *next;
-// 	struct agingPolicyStruct *prev;
-	
-// };
-
-// extern struct scPolicyStruct scHead;
-// extern struct agingPolicyStruct agingHead;
-// extern scPolicyStruct *scHeadPointer;
-
-
-
-
 struct scq{
 	struct scq *next;
 	int idx;

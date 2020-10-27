@@ -1,7 +1,4 @@
 
-
-
-
 /* frame.c - manage physical frames */
 #include <conf.h>
 #include <kernel.h>
@@ -15,21 +12,17 @@
 STATWORD ps;
 SYSCALL init_frm()
 {	
-
-	//now I don't need this.
-	//fr_map_t *ptr = NFRAMES*NBPG;
-	
+	fr_map_t *ptr = NFRAMES*NBPG;
 	disable(ps);
 	int i = 0;
 	while (i < NFRAMES) {
-		//frm_tab[i] = ptr;
 		frm_tab[i].fr_status = 0;
 		frm_tab[i].fr_pid = -1;
 		frm_tab[i].fr_vpno = -1;
-		frm_tab[i].fr_refcnt = 0;
 		frm_tab[i].fr_type = FR_PAGE;
 		frm_tab[i].fr_dirty = 0;
-		//++ptr;
+		frm_tab[i].fr_refcnt = 0;
+		ptr++;
 		i++;
 	}
 	restore(ps);
@@ -43,13 +36,9 @@ SYSCALL init_frm()
 SYSCALL get_frm(int* avail)
 {
 	disable(ps);
-	int currentPolicy = grpolicy();
-	//starting with 5 because the first 5 frames 
-	//after kernel memory are assigned for global 
-	//page tables and global page directories
 	int i = 0;
 	while (i < NFRAMES) {
-		if (frm_tab[i].fr_status == 0) {
+		if (!frm_tab[i].fr_status) {
 			*avail = (FRAME0 + i)*NBPG;
 			restore(ps);
 			return i;
@@ -57,30 +46,30 @@ SYSCALL get_frm(int* avail)
 		i++;
 	}
 
-	//This gives the frame which should be swapped out
+	struct fifo *q = &fifohead;
+	struct fifo *p = fifohead.next;
+	struct fifo *prev = q;	
 	int frameNumber = -1;
-	if (currentPolicy == AGING) {
-		struct fifo *q = &fifohead;
-		struct fifo *p = fifohead.next;
-		struct fifo *minprev = q;	
-		int min = 256;
+
+	if (grpolicy() == AGING) {
+		int minAge = 256;
 		while (p != NULL) {
-			p->age = p->age>>1;
+			p->age = (int) p->age/2;
 			if (isAccSet(p->idx) != -1) {
 				if (p->age + 128 > 255)
 					p->age = 255;
 				else
 					p->age += 128;
 			}
-			if (p->age < min) {
-				min = p->age;
-				minprev = q;
+			if (p->age < minAge) {
+				minAge = p->age;
+				prev = q;
 			}
 			q = p;
 			p = p->next;
 		}
-		int idx = (minprev->next)->idx;
-		minprev->next = (minprev->next)->next;
+		int idx = (prev->next)->idx;
+		prev->next = (prev->next)->next;
 		free_frm(idx);
 		markPTENonExistent(idx);
 		*avail = (FRAME0 + idx)*NBPG;	
@@ -88,7 +77,7 @@ SYSCALL get_frm(int* avail)
 		return idx;
 	}
 	
-	else if (currentPolicy == SC) {
+	else {
 		
 		while (1) {
 			if (scPointer->next == &scqhead) {
