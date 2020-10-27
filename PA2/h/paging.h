@@ -77,12 +77,12 @@ extern struct scq *scPointer;
 
 
 
-int markPTENonExistent(int);
+// int setPdPres(int);
 //int removeFramesOnKill(int); 
 int writeBackBS(int); 
-int writeBackDirtyFrames(int);
-int markIfDirty(int); 
-int isAccSet(int);
+int writeBackDF(int);
+// int markIfDirty(int); 
+// int isAccSet(int);
 
 
 

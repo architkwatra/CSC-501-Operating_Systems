@@ -71,7 +71,7 @@ SYSCALL xmmap(int virtpage, bsd_t source, int npages)
  */
 SYSCALL xmunmap(int virtpage)
 {	
-	writeBackDirtyFrames(getpid());
+	writeBackDF(getpid());
 	bsm_unmap(getpid(), virtpage, 0);
 	return OK;	
 
