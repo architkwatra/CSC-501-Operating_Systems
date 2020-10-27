@@ -209,13 +209,13 @@ int writeDirtyFrame(int i) {
 
 		int store, pageth, pid = frm_tab[i].fr_pid, vpno = NBPG*frm_tab[i].fr_vpno;
 
-		int catch = bsm_lookup(pid, vpno, store, pageth); 
+		int catch = bsm_lookup(pid, vpno, &store, &pageth); 
 		if (catch == SYSERR) {
 				//kill(frm_tab[i].fr_pid);
 				return SYSERR;
 		}   
 		char *pointerToSrc = (FRAME0 + i)*NBPG;
-		write_bs(pointerToSrc, &store, &pageth);
+		write_bs(pointerToSrc, store, pageth);
 		frm_tab[i].fr_dirty = 0;
 		return OK;
 }
