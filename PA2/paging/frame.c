@@ -107,7 +107,7 @@ SYSCALL get_frm(int* avail)
 		// free_frm(freeFrameIndex);
 		// setPdPres(freeFrameIndex);
 
-		
+
 		*avail = (FRAME0 + freeFrameIndex)*NBPG;	
 		return freeFrameIndex;
 	}
@@ -182,7 +182,7 @@ int getAccBit(int frameIndex) {
 }
 
 
-int writeBackDF(int frameIndex) {
+int setDirty(int frameIndex) {
 
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[frameIndex].fr_vpno;
 	// unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
@@ -209,10 +209,10 @@ int writeBackDF(int pid) {
 	int i = 0;
 	while (i < NFRAMES) {
 		if (frm_tab[i].fr_pid == pid && frm_tab[i].fr_type == FR_PAGE) {
-			writeBackDF(i);
+			setDirty(i);
 		}
 		if (frm_tab[i].fr_status == 1 && frm_tab[i].fr_pid == pid && frm_tab[i].fr_dirty == 1 && frm_tab[i].fr_type == FR_PAGE) {
-			if (writeBackBS(i) == SYSERR) {
+			if (writeDF(i) == SYSERR) {
 				return SYSERR;
 			}
 		}
@@ -222,7 +222,7 @@ int writeBackDF(int pid) {
 	return OK;
 }
 
-int writeBackBS(int i) {
+int writeDF(int i) {
 		int store, pageth, pid = frm_tab[i].fr_pid, vpno = NBPG*frm_tab[i].fr_vpno;
 		int catch = bsm_lookup(pid, vpno, &store, &pageth); 
 		if (catch != SYSERR) { 
