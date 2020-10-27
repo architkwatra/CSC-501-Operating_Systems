@@ -14,16 +14,10 @@ SYSCALL pfint()
 	//might need to interrupt
 	// kprintf("\n0000000000000\n");
 	unsigned long faultingPage = read_cr2();
-	int store, pageth;
-	int temp = bsm_lookup(getpid(), faultingPage, &store, &pageth);
-
-	kprintf("store = %d and pageth = %d in pfint\n", store, pageth);
-	if (temp == SYSERR) {
-		// kill(getpid());
-		kprintf("\nBSM LOOKUP FAILED\n");
-		return SYSERR;
-	}	
+	
+		
 	// kprintf("\nXXXXXXXXXXXX\n");
+	
 	int vp = faultingPage>>12;
 	unsigned long pdbrCurrentProcess = proctab[currpid].pdbr;
 	unsigned long ptNumber = faultingPage>>22;
@@ -92,7 +86,16 @@ SYSCALL pfint()
 		frameToInsert.next = fifohead.next;
 		fifohead.next = &frameToInsert;
 	}
-
+	
+	int store, pageth;
+	int temp = bsm_lookup(getpid(), faultingPage, &store, &pageth);
+	if (pageth < 0)
+		kprintf("222222222222 --------- store = %d and pageth = %d in pfint\n", store, pageth);
+	if (temp == SYSERR) {
+		// kill(getpid());
+		kprintf("\nBSM LOOKUP FAILED\n");
+		return SYSERR;
+	}
 	// kprintf("\n5555555555\n");
 	read_bs( (char*)framePointer, store, pageth);
 	

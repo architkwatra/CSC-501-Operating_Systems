@@ -66,9 +66,9 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 	
 	if (ptr->store >= 0 && ptr->store < 8) {
 		*store = ptr->store;
-		*pageth = (int) (vaddr>>12 - ptr->vhpno);
+		*pageth = (int) ((vaddr/NBPG) - ptr->vhpno);
 		if (pageth < 0) {
-			kprintf("vaddr = %lu amnd vhpno = %d and *pageth = %d\n", vaddr, ptr->vhpno, *pageth);
+			kprintf("1111111111111 ------ vaddr = %lu amnd vhpno = %d and *pageth = %d\n", vaddr, ptr->vhpno, *pageth);
 		}
 		//kprintf("vaddr = %lu amnd vhpno = %d and *pageth = %d\n", vaddr, ptr->vhpno, *pageth);
 		return OK;
