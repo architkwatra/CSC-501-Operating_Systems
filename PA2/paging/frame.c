@@ -46,27 +46,27 @@ SYSCALL get_frm(int* avail)
 		i++;
 	}
 
-	struct fifo *q = &fifohead;
-	struct fifo *p = fifohead.next;
-	struct fifo *prev = q;	
+	struct fifo *fast = &fifohead;
+	struct fifo *slow = fifohead.next;
+	struct fifo *prev = fast;	
 	int frameNumber = -1;
 
 	if (grpolicy() == AGING) {
 		int minAge = 256;
-		while (p) {
-			p->age = (int) p->age/2;
-			if (isAccSet(p->idx) != -1) {
-				if (p->age + 128 > 255)
-					p->age = 255;
+		while (slow) {
+			slow->age = (int) slow->age/2;
+			if (isAccSet(slow->idx) != -1) {
+				if (slow->age + 128 > 255)
+					slow->age = 255;
 				else
-					p->age += 128;
+					slow->age += 128;
 			}
-			if (p->age < minAge) {
-				minAge = p->age;
-				prev = q;
+			if (slow->age < minAge) {
+				minAge = slow->age;
+				prev = fast;
 			}
-			q = p;
-			p = p->next;
+			fast = slow;
+			slow = slow->next;
 		}
 		int idx = (prev->next)->idx;
 		prev->next = (prev->next)->next;
@@ -110,14 +110,14 @@ SYSCALL get_frm(int* avail)
  */
 SYSCALL free_frm(int i)
 {
-	kprintf("\nInside free_frm()\n");
-	frm_tab[i].fr_status = 0;
-    	frm_tab[i].fr_vpno = -1;
-	if (frm_tab[i].fr_dirty == 1)
+	fr_map_t *ptr = &frm_tab[i];
+	ptr->fr_vpno = -1;
+	ptr->fr_status = 0;
+	ptr->fr_pid = -1;
+	if (ptr->fr_dirty) {
 		writeDirtyFrame(i);
-	frm_tab[i].fr_pid = -1;
+	}
 	return OK;
-	
 }
 
 
@@ -125,16 +125,10 @@ static unsigned long *eax;
 
 int markPTENonExistent(int frameNumber) {
 
-	/*int vpn = frm_tab[frameNumber].fr_vpno;
-	unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
-	unsigned long ptNumber = vpn >> 10;
-	unsigned long pageNumber = (vpn << 10) >> 10;
-	*/
-
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[frameNumber].fr_vpno;
-        unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
-        unsigned long ptNumber = vAddrStruct->pd_offset;
-        unsigned long pageNumber = vAddrStruct->pt_offset;
+	unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
+	unsigned long ptNumber = vAddrStruct->pd_offset;
+	unsigned long pageNumber = vAddrStruct->pt_offset;
 
 	pd_t *pdePtr = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
 	pt_t *ptePointer = pdePtr->pd_base*4096 + sizeof(pt_t)*pageNumber;
@@ -153,13 +147,6 @@ int markPTENonExistent(int frameNumber) {
 }
 
 int isAccSet(int idx) {
-	/*int vpn = frm_tab[idx].fr_vpno;
-	
-	unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vpn>>10;
-        unsigned long pageNumber = (vpn<<10)>>10;
-	*/
-
 	virt_addr_t *vAddrStruct = (virt_addr_t*)&frm_tab[idx].fr_vpno;
         unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
         unsigned long ptNumber = vAddrStruct->pd_offset;
@@ -179,7 +166,6 @@ int isAccSet(int idx) {
 
 
 int markIfDirty(int idx) {
-        //int vpn = frm_tab[idx].fr_vpno;
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[idx].fr_vpno;
         unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
         unsigned long ptNumber = vAddrStruct->pd_offset;
@@ -221,14 +207,16 @@ int writeBackDirtyFrames(int pid) {
 
 int writeDirtyFrame(int i) {
 
-		int store, pageth; 
-                if (bsm_lookup(frm_tab[i].fr_pid, frm_tab[i].fr_vpno*NBPG /*(vaddr)*/, store, pageth) == SYSERR) {
-                        kill(frm_tab[i].fr_pid);
-                        return SYSERR;
-                }   
-                char *pointerToSrc = (FRAME0 + i)*NBPG;
-                write_bs(pointerToSrc, &store, &pageth);
-                frm_tab[i].fr_dirty = 0;
+		int store, pageth, pid = frm_tab[i].fr_pid, vpno = NBPG*frm_tab[i].fr_vpno;
+
+		int catch = bsm_lookup(pid, vpno, store, pageth); 
+		if (catch == SYSERR) {
+				//kill(frm_tab[i].fr_pid);
+				return SYSERR;
+		}   
+		char *pointerToSrc = (FRAME0 + i)*NBPG;
+		write_bs(pointerToSrc, &store, &pageth);
+		frm_tab[i].fr_dirty = 0;
 		return OK;
 }
 
