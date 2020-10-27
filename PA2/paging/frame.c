@@ -43,23 +43,21 @@ void policyCommonStuff(int frm_tab_index) {
 SYSCALL get_frm(int* avail)
 {
 	disable(ps);
-	int i = 0;
+	int i;
+	i = 0;
 	while (i < NFRAMES) {
-		if (!frm_tab[i].fr_status) {
+		int frameStatus = frm_tab[i].fr_status;
+		if (!frameStatus) {
 			*avail = (FRAME0 + i)*NBPG;
 			restore(ps);
 			return i;
 		}
 		i++;
 	}
-
 	struct fifo *fast = &fifohead;
 	struct fifo *slow = fifohead.next;
 	struct fifo *prev = fast;	
 	int frameNumber = -1;
-
-
-
 	if (grpolicy() == SC) {
 
 		while (1) {
@@ -97,17 +95,9 @@ SYSCALL get_frm(int* avail)
 			fast = slow;
 			slow = slow->next;
 		}
-
 		int freeFrameIndex = (prev->next)->idx;
 		prev->next = (prev->next)->next;
-		
 		policyCommonStuff(freeFrameIndex);
-
-
-		// free_frm(freeFrameIndex);
-		// setPdPres(freeFrameIndex);
-
-
 		*avail = (FRAME0 + freeFrameIndex)*NBPG;	
 		return freeFrameIndex;
 	}
@@ -135,28 +125,21 @@ void getTranslatedAddress(virt_addr_t *a) {
 		return a;
 } 
 
-static unsigned long *eax;
-
 int setPdPres(int frameNumber) {
-
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[frameNumber].fr_vpno;
-	unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
-	unsigned long ptNumber = vAddrStruct->pd_offset;
-	unsigned long pageNumber = vAddrStruct->pt_offset;
-
-	pd_t *pdePtr = (pt_t*)(pdbr + sizeof(pt_t)*ptNumber);
-	pt_t *ptePointer = pdePtr->pd_base*4096 + sizeof(pt_t)*pageNumber;
-	ptePointer->pt_pres = 0;
-	
-	if (getpid() == frm_tab[frameNumber].fr_pid) {
-		//static unsigned long *eax;
-		eax = frm_tab[frameNumber].fr_vpno*NBPG;
-		asm("invlpg eax");	
-	}
-	
+	// unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
+	// unsigned long ptNumber = vAddrStruct->pd_offset;
+	// unsigned long pageNumber = vAddrStruct->pt_offset;
+	pd_t *pdePtr = (pt_t*)(proctab[frm_tab[frameNumber].fr_pid].pdbr + sizeof(pt_t)*vAddrStruct->pd_offset);
+	pt_t *ptePtr = pdePtr->pd_base*4096 + sizeof(pt_t)*vAddrStruct->pt_offset;
+	ptePtr->pt_pres = 0;
+	static unsigned long *tlb;
 	frm_tab[frameNumber].fr_refcnt = frm_tab[frameNumber].fr_refcnt - 1;
-	if (frm_tab[frameNumber].fr_refcnt == 0)
-		pdePtr->pd_pres = 0; 
+	if (frm_tab[frameNumber].fr_pid == getpid()) {
+		tlb = frm_tab[frameNumber].fr_vpno*NBPG;
+		asm("invlpg tlb");	
+	}
+	if (!frm_tab[frameNumber].fr_refcnt) pdePtr->pd_pres = 0; 
 	return OK;
 }
 
@@ -195,13 +178,6 @@ int setDirty(int frameIndex) {
 
 	frm_tab[frameIndex].fr_dirty = !ptePtr->pt_dirty ? 0 : 1;
 	return OK;
-	
-	// if (!ptePtr->pt_dirty) 
-	// 	frm_tab[frameIndex].fr_dirty = 0;
-	// else
-	// 	frm_tab[frameIndex].fr_dirty = 1;
-    
-
 }
 
 
