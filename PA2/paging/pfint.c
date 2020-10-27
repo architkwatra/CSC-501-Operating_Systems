@@ -37,12 +37,9 @@ SYSCALL pfint()
 		//create new page table for process
 		//mark pd_pres = 1
 		//add location of pt to pd_base
-		kprintf("\n creaing a new page table and CALLING get_frm from pfint.c\n");
 		
 		int idx = get_frm(&framePointer);
 		if (idx == SYSERR) {
- 	             	// kill(getpid());
-					kprintf("\nFFFFFFFFFFFFFF\n");
                  	return SYSERR;
 	        }
 		
@@ -52,15 +49,12 @@ SYSCALL pfint()
 		pdePtr->pd_pres = 1;
 		pdePtr->pd_write = 1;
 		pdePtr->pd_base = (int)framePointer/NBPG;
-		kprintf("\nEEEEEEEEEEEEEE\n");
 	}
 	// kprintf("\n1111111111111111\n");
 	int idx = pdePtr->pd_base - FRAME0;
 	frm_tab[idx].fr_refcnt++;
 	idx = get_frm(&framePointer);
 	if (idx == SYSERR) {
-		// kill(getpid());
-		kprintf("\nZZZZZZZZZZZZZZZZZZzz\n");
 		return SYSERR;
 	}
 	// kprintf("\n2222222222222222222\n");
@@ -96,9 +90,8 @@ SYSCALL pfint()
 	int store, pageth;
 	int temp = bsm_lookup(getpid(), faultingPage, &store, &pageth);
 	if (temp < 0)
-		kprintf("222------store = %d, pageth = %d and temp = %din pfint\n", store, pageth, temp);
+		//kprintf("222------store = %d, pageth = %d and temp = %din pfint\n", store, pageth, temp);
 	if (temp == SYSERR) {
-		// kill(getpid());
 		kprintf("\nBSM LOOKUP FAILED\n");
 		return SYSERR;
 	}

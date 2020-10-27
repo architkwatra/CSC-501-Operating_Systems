@@ -17,7 +17,7 @@ SYSCALL xmmap(int virtpage, bsd_t source, int npages)
 		kprintf("Failed in 1\n");
 		return SYSERR;
 	}
-	kprintf("bs_npages = %d, bs_status = %d and pid = %d\n", bsm_tab[source].bs_npages, bsm_tab[source].bs_status, getpid());
+	//kprintf("bs_npages = %d, bs_status = %d and pid = %d\n", bsm_tab[source].bs_npages, bsm_tab[source].bs_status, getpid());
 	if (bsm_tab[source].bs_status == 0 || (bsm_tab[source].bs_npages >= npages)) {
 		
 		if (bsm_tab[source].bs_status == 0)  
@@ -25,7 +25,7 @@ SYSCALL xmmap(int virtpage, bsd_t source, int npages)
 		else
 			bsm_map(getpid(), virtpage, source, bsm_tab[source].bs_npages);
 
-		kprintf("BS-%d booked for pid-%d\n", source, bsm_tab[source].bs_pid);
+		//kprintf("BS-%d booked for pid-%d\n", source, bsm_tab[source].bs_pid);
 		return OK;
 	}
 	//kprintf("Failed in 2\n");

@@ -57,12 +57,12 @@ SYSCALL kill(int pid)
 	default:	pptr->pstate = PRFREE;
 	}
 
-	kprintf("called removedFramesOnKill\n");
+	//kprintf("called removedFramesOnKill\n");
 	removeFramesOnKill(pid);	
-	kprintf("Release_bs called\n");
+	//kprintf("Release_bs called\n");
 	release_bs(proctab[pid].store);
 	
 	restore(ps);
-	kprintf("\nKilled process with pid = %d and now returning OK\n", pid);
+	//kprintf("\nKilled process with pid = %d and now returning OK\n", pid);
 	return(OK);
 }

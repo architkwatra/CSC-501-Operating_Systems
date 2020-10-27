@@ -84,8 +84,6 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	int freeFramePointer = 0;
 	int t = get_frm(&freeFramePointer);
 	if (t == SYSERR) {
-            //    kill(getpid());
-			kprintf("get_frm() called from create.c and returned error\n");
                return SYSERR;
         }
 	// kprintf("get_frm returned frame = %d and address = %d", t, freeFramePointer);
@@ -135,7 +133,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	*pushsp = pptr->pesp = (unsigned long)saddr;
 
 	restore(ps);
-	kprintf("\nProcess cretaed with PID = %d\n", pid);
+	//kprintf("\nProcess cretaed with PID = %d\n", pid);
 	return(pid);
 }
 

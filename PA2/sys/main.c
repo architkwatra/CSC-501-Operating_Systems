@@ -634,7 +634,7 @@ int main() {
     	   test3();
         //    break;
         // case 4:
-    	   //test4();
+    	   test4();
         //    break;
         // case 5:
     	   test5();

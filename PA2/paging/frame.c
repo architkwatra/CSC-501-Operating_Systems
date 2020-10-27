@@ -249,7 +249,7 @@ int removeFramesOnKill(int pid) {
 	struct scq *p = &scqhead;
 	struct scq *q = p->next;
 	int i = 0;
-	kprintf("Inside removeFramesOnKill, with p = %d\n", p->idx);
+	//kprintf("Inside removeFramesOnKill, with p = %d\n", p->idx);
 	if (q == NULL)
 		kprintf("No node in the policy queue\n");;
 

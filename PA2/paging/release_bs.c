@@ -11,7 +11,6 @@ SYSCALL release_bs(bsd_t bs_id) {
 		int ret = free_bsm((int)bs_id);
 	
 		if (ret == SYSERR) {
-			kprintf("free_bsm() returned SYSERR which means that the BS was shared\n");
 			return SYSERR;
 		}
 	} else {
@@ -19,12 +18,12 @@ SYSCALL release_bs(bsd_t bs_id) {
 		int count = 0;
 		while (i < NPROC) {
 			if (proctab[i].store == bs_id && getpid() != i && getpid() != 49) { 
-				kprintf("release_bs, i = %d and bs_id = %d\n", i, bs_id);
+				//kprintf("release_bs, i = %d and bs_id = %d\n", i, bs_id);
 				count++;
 			}
 			++i;
 		}
-		kprintf("Final count = %d\n", count);
+		//kprintf("Final count = %d\n", count);
 		if (count == 0)
 			free_bsm((int)bs_id);
 	}
