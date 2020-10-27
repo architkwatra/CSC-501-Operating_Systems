@@ -45,6 +45,7 @@ SYSCALL get_frm(int* avail)
 	disable(ps);
 	int i;
 	i = 0;
+	int minAge = 10000;
 	while (i < NFRAMES) {
 		int frameStatus = frm_tab[i].fr_status;
 		if (!frameStatus) {
@@ -57,22 +58,19 @@ SYSCALL get_frm(int* avail)
 	struct fifo *fast = &fifohead;
 	struct fifo *slow = fifohead.next;
 	struct fifo *prev = fast;	
-	int frameNumber = -1;
-	if (grpolicy() == SC) {
-
-		while (1) {
+	int idx = -1;
+	int currPolicy = grpolicy();
+	int check = 1;
+	if (currPolicy == SC) {
+		while (check) {
 			if (scPointer->next == &scqhead) {
 				scPointer = scqhead.next;
 			}
-			
 			writeBackDF((scPointer->next)->idx);
 			int frm_tab_index = getAccBit((scPointer->next)->idx);
 			if (frm_tab_index == (scPointer->next)->idx) {
-				
 				policyCommonStuff(frm_tab_index);
-				
 				*avail = (FRAME0 + frm_tab_index)*NBPG;
-
 				scPointer->next = (scPointer->next)->next;
 				restore(ps);
 				return frm_tab_index;
@@ -81,17 +79,13 @@ SYSCALL get_frm(int* avail)
 		}
 
 	} else {
-		int minAge = 10000;
 		while (slow) {
 			slow->age = (int) slow->age/2;
-
 			if (getAccBit(slow->idx) != -1) slow->age += 128;
-
 			if (slow->age < minAge) {
 				minAge = slow->age;
 				prev = fast;
-			}
-			
+			}			
 			fast = slow;
 			slow = slow->next;
 		}
@@ -127,13 +121,10 @@ void getTranslatedAddress(virt_addr_t *a) {
 static unsigned long *tlb;
 int setPdPres(int frameNumber) {
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[frameNumber].fr_vpno;
-	// unsigned long pdbr = proctab[frm_tab[frameNumber].fr_pid].pdbr;
-	// unsigned long ptNumber = vAddrStruct->pd_offset;
-	// unsigned long pageNumber = vAddrStruct->pt_offset;
 	pd_t *pdePtr = (pt_t*)(proctab[frm_tab[frameNumber].fr_pid].pdbr + sizeof(pt_t)*vAddrStruct->pd_offset);
 	pt_t *ptePtr = pdePtr->pd_base*4096 + sizeof(pt_t)*vAddrStruct->pt_offset;
+
 	ptePtr->pt_pres = 0;
-	
 	frm_tab[frameNumber].fr_refcnt = frm_tab[frameNumber].fr_refcnt - 1;
 	if (frm_tab[frameNumber].fr_pid == getpid()) {
 		tlb = frm_tab[frameNumber].fr_vpno*NBPG;
@@ -145,49 +136,37 @@ int setPdPres(int frameNumber) {
 
 int getAccBit(int frameIndex) {
 	virt_addr_t *vAddrStruct = (virt_addr_t*)&frm_tab[frameIndex].fr_vpno;
-	// unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-	// unsigned long ptNumber = vAddrStruct->pd_offset;
-	// unsigned long pageNumber = vAddrStruct->pt_offset;
-
 	unsigned long pdeAddress = proctab[frm_tab[frameIndex].fr_pid].pdbr + 4*vAddrStruct->pd_offset;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
 	unsigned int pt = pdePtr->pd_base*NBPG;
+
 	pt_t *ptePointer = (pt_t*) pt + 4*vAddrStruct->pt_offset;
-
-
 	if (ptePointer->pt_acc == 0) {
 		return frameIndex;
 	} else {
 		ptePointer->pt_acc = 0;
 	}
 	return SYSERR;
-	
 }
 
 
 int setDirty(int frameIndex) {
-
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[frameIndex].fr_vpno;
-	// unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-	// unsigned long ptNumber = vAddrStruct->pd_offset;
-	// unsigned long pageNumber = vAddrStruct->pt_offset;
-
 	pd_t *pdPtr = (pd_t*) ((virt_addr_t*)& frm_tab[frameIndex].fr_vpno + 4*vAddrStruct->pd_offset);
-	// unsigned int pt =  pdPtr->pd_base*NBPG;
 	pt_t *ptePtr = pdPtr->pd_base*NBPG + 4*vAddrStruct->pt_offset;
-
 	frm_tab[frameIndex].fr_dirty = !ptePtr->pt_dirty ? 0 : 1;
 	return OK;
 }
 
-
 int writeBackDF(int pid) {
 	int i = 0;
+	fr_map_t *ptr;
 	while (i < NFRAMES) {
-		if (frm_tab[i].fr_pid == pid && frm_tab[i].fr_type == FR_PAGE) {
+		ptr = &frm_tab[i];
+		if (ptr->fr_status == 1 && ptr->fr_pid == pid && ptr->fr_type == FR_PAGE) {
 			setDirty(i);
 		}
-		if (frm_tab[i].fr_status == 1 && frm_tab[i].fr_pid == pid && frm_tab[i].fr_dirty == 1 && frm_tab[i].fr_type == FR_PAGE) {
+		if (ptr->fr_pid == pid && ptr->fr_dirty == 1 && ptr->fr_type == FR_PAGE) {
 			if (writeDF(i) == SYSERR) {
 				return SYSERR;
 			}
@@ -199,7 +178,10 @@ int writeBackDF(int pid) {
 }
 
 int writeDF(int i) {
-		int store, pageth, pid = frm_tab[i].fr_pid, vpno = NBPG*frm_tab[i].fr_vpno;
+
+		fr_map_t *ptr = &frm_tab[i];
+		int store, pageth, pid = ptr->fr_pid, vpno = NBPG*ptr->fr_vpno;
+		
 		int catch = bsm_lookup(pid, vpno, &store, &pageth); 
 		if (catch != SYSERR) { 
 			write_bs((char *) ((FRAME0 + i)*NBPG), store, pageth);
