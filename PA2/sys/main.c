@@ -285,6 +285,7 @@ void proc1_test5(int* ret) {
 	//kprintf("ready to allocate heap space\n");
 	x = vgetmem(1024);
 	if ((x == NULL) || (x < 0x1000000)) {
+		kprintf("FAIL 1 in main\n");
 		*ret = TFAILED;
 	    //kprintf("heap allocated at %x (address should be > 0x1000000 (16MB))\n", x);
     }
@@ -295,12 +296,15 @@ void proc1_test5(int* ret) {
 	*(x + 1) = 200;
 
 	//kprintf("heap variable: %d %d (should print 100 and 200)\n", *x, *(x + 1));
-	if ((*x != 100) || (*(x+1) != 200))
+	if ((*x != 100) || (*(x+1) != 200)) {
+		kprintf("FAIL 2\n");
 		*ret = TFAILED;
+	}
 	vfreemem(x, 1024);
 
 	x = vgetmem((256 + 1) * NBPG); //try to acquire a space that is bigger than size of one backing store
 	if (x != SYSERR) {
+		kprintf("FAIL 3\n");
 		*ret = TFAILED;
     }
 
@@ -308,6 +312,7 @@ void proc1_test5(int* ret) {
 	y = vgetmem(50*NBPG);
 	z = vgetmem(50*NBPG);
 	if ((x == SYSERR) || (y == SYSERR) || (z != SYSERR)){
+		kprintf("FAIL 4\n");
 		*ret = TFAILED;
 		if (x != NULL) vfreemem(x, 50*NBPG);
 		if (y != NULL) vfreemem(y, 50*NBPG);
@@ -317,6 +322,7 @@ void proc1_test5(int* ret) {
 	vfreemem(y, 50*NBPG);
 	z = vgetmem(50*NBPG);
 	if (z == SYSERR){
+		kprintf("FAIL 5\n");
 		*ret = TFAILED;
 	}
 	if (x != NULL) vfreemem(x, 50*NBPG);
@@ -332,7 +338,7 @@ void test5() {
 
 	kprintf("\nTest 5: vgetmem/vfreemem\n");
 	pid1 = vcreate(proc1_test5, 2000, 100, 20, "proc1_test5", 1, &ret);
-
+	kprintf("pid1 = %d\n", pid1);
 	//kprintf("pid %d has private heap\n", pid1);
 	resume(pid1);
 	sleep(3);
@@ -628,7 +634,7 @@ int main() {
     	   test3();
         //    break;
         // case 4:
-    	   test4();
+    	   //test4();
         //    break;
         // case 5:
     	   test5();

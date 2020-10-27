@@ -33,8 +33,11 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	int pid = create(procaddr,ssize,priority,name,nargs,args);
 	disable(ps);
 	struct pentry *ptr = &proctab[pid];
-	if (pid == SYSERR)	
+	if (pid == SYSERR) {
+		kprintf("FAIL 1\n");
+		deleteCreatedTableData(pid);
 		return SYSERR;
+	}
 	//used in xmmap
 	ptr->isPrivate = 1;
 
@@ -44,12 +47,16 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 		bsm_map(pid, (int)procaddr>>12, freeStore, hsize);
 		bsm_tab[freeStore].bs_isPrivate = 1;
 		struct mblock *mptr;
+
+
 		(proctab[pid].vmemlist)->mnext = mptr = (struct mblock*) BACKING_STORE_BASE + freeStore*BACKING_STORE_UNIT_SIZE;
 		proctab[pid].vhpnpages = hsize;
 		mptr->mlen = hsize*NBPG;
 		mptr->mnext = 0;
 		
 	} else {
+		kprintf("FAIL 2\n");
+		deleteCreatedTableData(pid);	
 		return SYSERR;
 	}
 	restore(ps);
@@ -75,3 +82,24 @@ LOCAL	newpid()
 	}
 	return(SYSERR);
 }
+
+void deleteCreatedTableData(int pid) {
+
+	int i;
+	for (i=0; i<NFRAMES; ++i) {
+		if (frm_tab[i].fr_pid == pid)
+			frm_tab[i].fr_status = 0;
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+

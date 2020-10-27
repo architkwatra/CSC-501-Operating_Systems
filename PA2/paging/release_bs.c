@@ -18,7 +18,7 @@ SYSCALL release_bs(bsd_t bs_id) {
 		int i = 0;
 		int count = 0;
 		while (i < NPROC) {
-			if (proctab[i].store == bs_id && getpid() != i) { 
+			if (proctab[i].store == bs_id && getpid() != i && getpid() != 49) { 
 				kprintf("release_bs, i = %d and bs_id = %d\n", i, bs_id);
 				count++;
 			}

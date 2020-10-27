@@ -16,6 +16,7 @@ SYSCALL resume(int pid)
 	int	prio;			/* priority to return		*/
 
 	disable(ps);
+	kprintf("bad pid = %d and pstate = %d\n", pid, proctab[pid].pstate);
 	if (isbadpid(pid) || (pptr= &proctab[pid])->pstate!=PRSUSP) {
 		kprintf("\nRESUME.C ENCOUNTERED AN ERROR\n");
 		restore(ps);
