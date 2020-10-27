@@ -115,11 +115,14 @@ SYSCALL free_frm(int i)
 	ptr->fr_status = 0;
 	ptr->fr_pid = -1;
 	if (ptr->fr_dirty) {
-		writeDirtyFrame(i);
+		writeBackBS(i);
 	}
 	return OK;
 }
 
+void getTranslatedAddress(virt_addr_t *a) {
+		return a;
+} 
 
 static unsigned long *eax;
 
@@ -166,23 +169,23 @@ int isAccSet(int idx) {
 
 
 int markIfDirty(int idx) {
+
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[idx].fr_vpno;
-        unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vAddrStruct->pd_offset;
-        unsigned long pageNumber = vAddrStruct->pt_offset;
+	unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
+	unsigned long ptNumber = vAddrStruct->pd_offset;
+	unsigned long pageNumber = vAddrStruct->pt_offset;
 
-        unsigned long pdeAddress = pdbr + 4*ptNumber;
-        pd_t *pdePtr = (pd_t*) pdeAddress;
+	unsigned long pdeAddress = pdbr + 4*ptNumber;
+	pd_t *pdePtr = (pd_t*) pdeAddress;
 
-        unsigned int pt =  pdePtr->pd_base*NBPG;
-        pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
-        if (ptePointer->pt_dirty == 1) {
+	unsigned int pt =  pdePtr->pd_base*NBPG;
+	pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
+	if (ptePointer->pt_dirty == 1) {
 		frm_tab[idx].fr_dirty = 1;
-        }
+	}
 	else
 		frm_tab[idx].fr_dirty = 0;
-
-        return OK;
+    return OK;
 
 }
 
@@ -195,7 +198,7 @@ int writeBackDirtyFrames(int pid) {
 			markIfDirty(i);
 		}
 		if (frm_tab[i].fr_status == 1 && frm_tab[i].fr_pid == pid && frm_tab[i].fr_dirty == 1 && frm_tab[i].fr_type == FR_PAGE) {
-			if (writeDirtyFrame(i) == SYSERR) {
+			if (writeBackBS(i) == SYSERR) {
 				return SYSERR;
 			}
 		}
@@ -205,54 +208,17 @@ int writeBackDirtyFrames(int pid) {
 	return OK;
 }
 
-int writeDirtyFrame(int i) {
-
+int writeBackBS(int i) {
 		int store, pageth, pid = frm_tab[i].fr_pid, vpno = NBPG*frm_tab[i].fr_vpno;
-
 		int catch = bsm_lookup(pid, vpno, &store, &pageth); 
-		if (catch == SYSERR) {
-				//kill(frm_tab[i].fr_pid);
-				return SYSERR;
-		}   
-		char *pointerToSrc = (FRAME0 + i)*NBPG;
-		write_bs(pointerToSrc, store, pageth);
+		if (catch == SYSERR) 
+				return SYSERR;  		
+		write_bs((char *) ((FRAME0 + i)*NBPG), store, pageth);
 		frm_tab[i].fr_dirty = 0;
 		return OK;
 }
 
 
-int removeFramesOnKill(int pid) {
-
-	struct scq *p = &scqhead;
-	struct scq *q = p->next;
-	int i = 0;
-	//kprintf("Inside removeFramesOnKill, with p = %d\n", p->idx);
-	if (q == NULL)
-		kprintf("No node in the policy queue\n");;
-
-	p = &scqhead;
-        q = p->next;
-	i = 0;
-	while (i < 1024 && q != &scqhead && q!= NULL) {
-		if (q == &scqhead) {
-			return OK;
-		}
-
-		if (frm_tab[q->idx].fr_pid == pid) {
-			q = q->next;
-			p->next = q;
-			frm_tab[pid].fr_status = 0;
-		}
-		else {
-			p = p->next;
-			q = q->next;
-		}
-
-		++i;		
-	}
-	return SYSERR;
-
-}
 
 
 

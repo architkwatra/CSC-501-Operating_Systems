@@ -1,3 +1,6 @@
+
+
+
 /* kill.c - kill */
 
 #include <conf.h>
@@ -8,11 +11,45 @@
 #include <io.h>
 #include <q.h>
 #include <stdio.h>
-
+#include <paging.h>
 /*------------------------------------------------------------------------
  * kill  --  kill a process and remove it from the system
  *------------------------------------------------------------------------
  */
+
+int removeProcPages(int pid) {
+
+	struct scq *slow = &scqhead, *fast = (&scqhead)->next;
+	int i = 0;
+	if (q == NULL)
+		kprintf("No node in the policy queue\n");;
+
+	slow = &scqhead;
+        fast = slow->next;
+	i = 0;
+	while (i < 1024 && fast != &scqhead) {
+		if (fast == NULL)
+			return SYSERR;
+
+		if (frm_tab[fast->idx].fr_pid == pid) {
+			fast = fast->next;
+			slow->next = fast;
+			frm_tab[pid].fr_status = 0;
+		}
+		else {
+			slow = slow->next;
+			fast = fast->next;
+		}
+		++i;	
+		
+		if (fast == &scqhead) {
+			return OK;
+		}	
+	}
+	return OK;
+
+}
+
 SYSCALL kill(int pid)
 {
 	STATWORD ps;    
@@ -57,12 +94,10 @@ SYSCALL kill(int pid)
 	default:	pptr->pstate = PRFREE;
 	}
 
-	//kprintf("called removedFramesOnKill\n");
-	removeFramesOnKill(pid);	
-	//kprintf("Release_bs called\n");
-	release_bs(proctab[pid].store);
-	
+	removeProcPages(pid);	
+	release_bs(proctab[pid].store);	
 	restore(ps);
-	//kprintf("\nKilled process with pid = %d and now returning OK\n", pid);
 	return(OK);
 }
+
+
