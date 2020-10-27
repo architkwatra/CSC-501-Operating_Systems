@@ -151,13 +151,14 @@ int markPTENonExistent(int frameNumber) {
 
 int isAccSet(int idx) {
 	virt_addr_t *vAddrStruct = (virt_addr_t*)&frm_tab[idx].fr_vpno;
-        unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-        unsigned long ptNumber = vAddrStruct->pd_offset;
-        unsigned long pageNumber = vAddrStruct->pt_offset;
-        unsigned long pdeAddress = pdbr + 4*ptNumber;
+	// unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
+	// unsigned long ptNumber = vAddrStruct->pd_offset;
+	// unsigned long pageNumber = vAddrStruct->pt_offset;
+
+	unsigned long pdeAddress = proctab[frm_tab[idx].fr_pid].pdbr + 4*vAddrStruct->pd_offset;
 	pd_t *pdePtr = (pd_t*) pdeAddress;
 	unsigned int pt = pdePtr->pd_base*NBPG;
-	pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
+	pt_t *ptePointer = (pt_t*) pt + 4*vAddrStruct->pt_offset;
 	if (ptePointer->pt_acc == 0) {
 		return idx;
 	}
@@ -171,20 +172,17 @@ int isAccSet(int idx) {
 int markIfDirty(int idx) {
 
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[idx].fr_vpno;
-	unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
-	unsigned long ptNumber = vAddrStruct->pd_offset;
-	unsigned long pageNumber = vAddrStruct->pt_offset;
+	// unsigned long pdbr = proctab[frm_tab[idx].fr_pid].pdbr;
+	// unsigned long ptNumber = vAddrStruct->pd_offset;
+	// unsigned long pageNumber = vAddrStruct->pt_offset;
 
-	unsigned long pdeAddress = pdbr + 4*ptNumber;
-	pd_t *pdePtr = (pd_t*) pdeAddress;
-
-	unsigned int pt =  pdePtr->pd_base*NBPG;
-	pt_t *ptePointer = (pt_t*) pt + 4*pageNumber;
-	if (ptePointer->pt_dirty == 1) {
-		frm_tab[idx].fr_dirty = 1;
-	}
-	else
+	pd_t *pdPtr = (pd_t*) ((virt_addr_t*)& frm_tab[idx].fr_vpno + 4*vAddrStruct->pd_offset);
+	// unsigned int pt =  pdPtr->pd_base*NBPG;
+	pt_t *ptePtr = pdPtr->pd_base*NBPG + 4*vAddrStruct->pt_offset;
+	if (!ptePtr->pt_dirty) 
 		frm_tab[idx].fr_dirty = 0;
+	else
+		frm_tab[idx].fr_dirty = 1;
     return OK;
 
 }
