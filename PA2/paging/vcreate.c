@@ -55,7 +55,7 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 
 	bsm_tab[emptyStore].bs_isPrivate = 1;
 
-	struct pentry *ptr = &proctab[pid];
+	ptr = &proctab[pid];
 	(ptr->vmemlist)->mnext = (struct mblock*) BACKING_STORE_BASE + emptyStore*BACKING_STORE_UNIT_SIZE;
 	if (ptr) ptr->vhpnpages = hsize;
 
