@@ -246,20 +246,37 @@ int removeFramesOnKill(int pid) {
 
 	struct scq *p = &scqhead;
 	struct scq *q = p->next;
-	
-	while (1) {
+	int i = 0;
+	kprintf("Inside removeFramesOnKill, with p = %d\n", p->idx);
+	if (q == NULL)
+		kprintf("No node in the policy queue\n");;
+	while (i < 1024 && q != &scqhead && q!= NULL) {
+		kprintf("q->idx = %d\n", q->idx);
+	}
+
+	p = &scqhead;
+        q = p->next;
+
+	i = 0;
+	while (i < 1024 && q != &scqhead && q!= NULL) {
+			
 		if (q == &scqhead) {
+			kprintf("q == &scqhead returning OK\n");
 			return OK;
 		}
 
 		if (frm_tab[q->idx].fr_pid == pid) {
+			kprintf("removing node with idx = q->idx%d\n");
 			q = q->next;
 			p->next = q;
 		}
 		else {
+			kprintf("\nint the else calse, and incremeneting p and q both\n");
 			p = p->next;
 			q = q->next;
-		}		
+		}
+
+		++i;		
 	}
 	return SYSERR;
 

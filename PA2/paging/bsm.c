@@ -66,7 +66,11 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 	
 	if (ptr->store >= 0 && ptr->store < 8) {
 		*store = ptr->store;
-		*pageth = (int)(vaddr/NBPG) - bsm_tab[ptr->store].bs_vpno;
+		*pageth = (int) (vaddr>>12 - ptr->vhpno);
+		if (pageth < 0) {
+			kprintf("vaddr = %lu amnd vhpno = %d and *pageth = %d\n", vaddr, ptr->vhpno, *pageth);
+		}
+		//kprintf("vaddr = %lu amnd vhpno = %d and *pageth = %d\n", vaddr, ptr->vhpno, *pageth);
 		return OK;
 	}
 	return SYSERR;
@@ -82,6 +86,7 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
 	bsm_tab[source].bs_status = 1;
 	bsm_tab[source].bs_pid = pid;
 	bsm_tab[source].bs_vpno = vpno;
+	proctab[pid].vhpno = vpno;
 	bsm_tab[source].bs_npages = npages;
 	proctab[pid].store = source;
 }
@@ -94,7 +99,20 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
  */
 SYSCALL bsm_unmap(int pid, int vpno, int flag)
 {
-	proctab[pid].store = -1;
+	if (bsm_tab[proctab[pid].store].bs_isPrivate == 0) {
+		int i = 0;
+                int count = 0;
+                while (i < NPROC) {
+                        if (proctab[i].store == proctab[pid].store && pid != i)
+                                count++;
+                        ++i;
+                }
+                if (count == 0)
+                        free_bsm((int)proctab[pid].store);
+        }
+	
+		proctab[pid].store = -1;
+	
 }
 
 

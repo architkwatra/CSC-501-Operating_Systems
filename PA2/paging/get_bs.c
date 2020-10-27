@@ -6,15 +6,16 @@
 int get_bs(int bs_id, unsigned int npages) {
 
   /* requests a new mapping of npages with ID map_id */
-	
+	kprintf("npages == %d and bs.npages = %d\n", npages, bsm_tab[bs_id].bs_npages);	
 	if (npages <= 0 || npages > 256) 
 		return SYSERR;
 	if (bsm_tab[bs_id].bs_status == 1) {
 		
 		if (bsm_tab[bs_id].bs_isPrivate == 0)
-			return SYSERR;
-		else 
 			return bsm_tab[bs_id].bs_npages;
+
+		else 
+			return SYSERR;
 	}
 	
 	return npages;
