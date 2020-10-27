@@ -1,5 +1,3 @@
-/* user.c - main */
-
 #include <conf.h>
 #include <kernel.h>
 #include <proc.h>
@@ -88,30 +86,19 @@ void proc_test2(int i,int j,int* ret,int s) {
 
 	bsize = get_bs(i, j);
     //kprintf("return %d\n",bsize);
-	if (bsize != 50) {
-		//kprintf("failed in 1 and bsize = %d\n", bsize);
+	if (bsize != 50)
 		*ret = TFAILED;
-	}
+
 	r = xmmap(MYVPNO1, i, j);
-	
 	if (j<=50 && r == SYSERR){
-		//kprintf("failed in 2\n");
 		*ret = TFAILED;
 	}
 	if (j> 50 && r != SYSERR){
-		
-		//kprintf("failed in 3 and j = %d and r = %d\n", j, r);
 		*ret = TFAILED;
 	}
-	//kprintf("GOING TO SLEEP for id = %d\n", getpid());
 	sleep(s);
-	//kprintf("waking up for proc id = %d\n", getpid());	
-	if (r != SYSERR) {
-		xmunmap(MYVPNO1);
-		//kprintf("Called xmunmap for pid = %d bsm-tab[i].bs_npages = %d\n", getpid(), bsm_tab[i].bs_npages);
-	}  else {kprintf("returned syserror\n");}
+	if (r != SYSERR) xmunmap(MYVPNO1);
 	release_bs(i);
-	//kprintf("Called release_bs for pid = %d and bsm_tab[i].bs_npages = %d\n", getpid(), bsm_tab[i].bs_npages);
 	return;
 }
 
@@ -123,12 +110,11 @@ void test2() {
 
 	int ret = TPASSED;
 	kprintf("\nTest 2: Testing backing store operations\n");
-	
+
 	mypid = create(proc_test2, 2000, 20, "proc_test2", 4, 1,50,&ret,4);
 	resume(mypid);
 	sleep(2);
 	for(i=1;i<=5;i++){
-		kprintf("\ni ===== %d", i);
 		pids[i] = create(proc_test2, 2000, 20, "proc_test2", 4, 1,i*20,&ret,0);
 		resume(pids[i]);
 	}
@@ -151,14 +137,11 @@ void proc1_test3(int i,int* ret) {
 	get_bs(i, 100);
 
 	if (xmmap(MYVPNO1, i, 100) == SYSERR) {
-	    kprintf("\nxmmap returned an error in proc1_test3\n");
 	    *ret = TFAILED;
 	    return 0;
 	}
 	sleep(4);
-	kprintf("\ncalling xmunmapin proc1_test3 for pid = %d\n", getpid());
 	xmunmap(MYVPNO1);
-	kprintf("\ncalling release_bs for i = %d and pid = %d in proc1_test3\n", i, getpid());
 	release_bs(i);
 	return;
 }
@@ -181,7 +164,6 @@ void test3() {
 	for(i=0;i < MAX_BSTORE;i++){
 		pids[i] = create(proc1_test3, 2000, 20, "proc1_test3", 2, i,&ret);
 		if (pids[i] == SYSERR){
-			kprintf("Fail 1 for i = %d\n", i);
 			ret = TFAILED;
 		}else{
 			resume(pids[i]);
@@ -190,16 +172,11 @@ void test3() {
 	sleep(1);
 	mypid = vcreate(proc2_test3, 2000, 100, 20, "proc2_test3", 0, NULL);
 	if (mypid != SYSERR)
-	{
-		kprintf("Fail 2 with pid = %d\n", mypid);
 		ret = TFAILED;
-	}
 
 	for(i=0;i < MAX_BSTORE;i++){
-		kprintf("Killing proc with pid = %d\n", i);
 		kill(pids[i]);
 	}
-		
 	if (ret != TPASSED)
 		kprintf("\tFAILED!\n");
 	else
@@ -214,7 +191,7 @@ void proc1_test4(int* ret) {
 	get_bs(MYBS1, 100);
 
 	if (xmmap(MYVPNO1, MYBS1, 100) == SYSERR) {
-		kprintf("Failed 1 xmmap call failed\n");
+		kprintf("xmmap call failed\n");
 		*ret = TFAILED;
 		sleep(3);
 		return;
@@ -223,7 +200,6 @@ void proc1_test4(int* ret) {
 	addr = (char*) MYVADDR1;
 	for (i = 0; i < 26; i++) {
 		*(addr + i * NBPG) = 'A' + i;
-		kprintf("A+i at address %x and value = %c\n", addr+i*NBPG, 'A' + i);
 	}
 
 	sleep(6);
@@ -232,8 +208,6 @@ void proc1_test4(int* ret) {
 	for (i = 0; i < 26; i++) {
 		/*expected output is abcde.....*/
 		if (*(addr + i * NBPG) != 'a'+i){
-			kprintf("A+i at address %x and value = %c\n", addr+i*NBPG, (*(addr+i*NBPG)));
-			kprintf("Failed 2\n");
 			*ret = TFAILED;
 			break;
 		}
@@ -253,7 +227,7 @@ void proc2_test4(int *ret) {
 	get_bs(MYBS1, 100);
 
 	if (xmmap(MYVPNO2, MYBS1, 100) == SYSERR) {
-		kprintf("Failed 3 xmmap call failed \n");
+		kprintf("xmmap call failed\n");
 		*ret = TFAILED;
 		sleep(3);
 		return;
@@ -263,10 +237,8 @@ void proc2_test4(int *ret) {
 
 	/*Shoud see what proc 1 updated*/
 	for (i = 0; i < 26; i++) {
-		kprintf("reading at address %x and value = %c\n", addr+i*NBPG, *(addr+i*NBPG));
 		/*expected output is ABCDEF.....*/
 		if (*(addr + i * NBPG) != 'A'+i){
-			kprintf("Failed 4\n");
 			*ret = TFAILED;
 			break;
 		}

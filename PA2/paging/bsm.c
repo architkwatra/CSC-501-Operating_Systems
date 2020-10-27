@@ -67,13 +67,13 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
 	if (ptr->store >= 0 && ptr->store < 8) {
 		*store = ptr->store;
 		int a = (int) vaddr/NBPG;
-		kprintf("a == %d\n", a);
+		//kprintf("a == %d\n", a);
 		int b = ptr->vhpno;
-		kprintf("b == %d\n", b);
+		//kprintf("b == %d\n", b);
 		*pageth = a-b;
 		if (*pageth < 0) 
 			*pageth = b+a;
-		kprintf("*pageth = %d\n", *pageth);
+		//kprintf("*pageth = %d\n", *pageth);
 		//*pageth = (int) (vaddr/NBPG) - (int) (ptr->vhpno);
 		
 		return *pageth;

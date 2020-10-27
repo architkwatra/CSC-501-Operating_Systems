@@ -99,7 +99,7 @@ SYSCALL pfint()
 	// kprintf("\n5555555555\n");
 	read_bs( (char*)framePointer, store, pageth);
 	
-	unsigned long pteAddress = pdePtr->pd_base*NBPG + offset + 4*pageNumber;
+	unsigned long pteAddress = pdePtr->pd_base*NBPG + 4*pageNumber;
  	pt_t *ptePtr = (pt_t*) pteAddress;
 	// kprintf("\npteAddress = %lu\n", pteAddress);
 	ptePtr->pt_pres = 1;
