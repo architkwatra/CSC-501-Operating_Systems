@@ -118,5 +118,3 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
 	}
 	return SYSERR;
 }
-
-
