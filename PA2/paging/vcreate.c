@@ -34,7 +34,6 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	disable(ps);
 	struct pentry *ptr = &proctab[pid];
 	if (pid == SYSERR) {
-		kprintf("FAIL in vcreate since pid = %d\n", pid);
 		deleteCreatedTableData(pid);
 		return SYSERR;
 	}
@@ -87,10 +86,11 @@ LOCAL	newpid()
 
 void deleteCreatedTableData(int pid) {
 
-	int i;
-	for (i=0; i<NFRAMES; ++i) {
+	int i = 0;
+	while (i<NFRAMES) {
 		if (frm_tab[i].fr_pid == pid)
 			frm_tab[i].fr_status = 0;
+		++i;
 	}
 
 }
