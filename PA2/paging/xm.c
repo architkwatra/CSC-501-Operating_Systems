@@ -13,15 +13,18 @@
 SYSCALL xmmap(int virtpage, bsd_t source, int npages)
 {	
 
-	if (bsm_tab[source].bs_isPrivate == 1) {
+	bs_map_t *ptr = &bsm_tab[source];
+	if (ptr->bs_isPrivate == 1) {
 		return SYSERR;
 	}
-	if (bsm_tab[source].bs_status == 0 || (bsm_tab[source].bs_npages >= npages)) {
+	
+	int bsNpages = ptr->bs_npages;
+	if (!ptr->bs_status || (bsNpages >= npages)) {
 		
-		if (bsm_tab[source].bs_status == 0)  
+		if (ptr->bs_status == 0)  
 			bsm_map(getpid(), virtpage, source, npages);
 		else
-			bsm_map(getpid(), virtpage, source, bsm_tab[source].bs_npages);
+			bsm_map(getpid(), virtpage, source, bsNpages);
 
 		return OK;
 	}

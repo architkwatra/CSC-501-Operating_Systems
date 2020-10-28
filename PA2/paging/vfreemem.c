@@ -16,20 +16,17 @@ SYSCALL	vfreemem(block, size)
 	unsigned size;
 {
 	struct mblock *ptr = proctab[getpid()].vmemlist;
-        
+        struct pentry *procPtr = &proctab[getpid()];
 	STATWORD ps;
         struct  mblock  *p, *q;
         unsigned top;
-
         
-        
-        
-        unsigned int maxadr = BACKING_STORE_BASE + proctab[getpid()].store*(BACKING_STORE_UNIT_SIZE) 
-                +  proctab[getpid()].vhpnpages*NBPG;
+        unsigned int maxadr = BACKING_STORE_BASE + procPtr->store*(BACKING_STORE_UNIT_SIZE) 
+                +  procPtr->vhpnpages*NBPG;
 
 
         if (size==0 || (unsigned)block>(unsigned)maxaddr
-            || ((unsigned)block) < ((unsigned) BACKING_STORE_BASE + proctab[getpid()].store*(BACKING_STORE_UNIT_SIZE)))
+            || ((unsigned)block) < ((unsigned) BACKING_STORE_BASE + procPtr->store*(BACKING_STORE_UNIT_SIZE)))
                 return (SYSERR);
         size = (unsigned)roundmb(size);
         disable(ps);

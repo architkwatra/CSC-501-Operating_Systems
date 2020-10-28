@@ -49,7 +49,8 @@ SYSCALL get_frm(int* avail)
 	while (i < NFRAMES) {
 		int frameStatus = frm_tab[i].fr_status;
 		if (!frameStatus) {
-			*avail = (FRAME0 + i)*NBPG;
+			int page = (FRAME0 + i)*NBPG;
+			*avail = page;
 			restore(ps);
 			return i;
 		}
