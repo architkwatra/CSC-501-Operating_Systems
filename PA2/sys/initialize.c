@@ -35,10 +35,6 @@ int	nextqueue;		/* next slot in q structure to use	*/
 char	*maxaddr;		/* max memory address (set by sizmem)	*/
 struct	mblock	memlist;	/* list of free memory blocks		*/
 
-struct scPolicy scPolicyHead;
-struct scPolicy *scPtr = &scPolicyHead;
-struct Aging agingHead;
-
 bs_map_t bsm_tab[8];
 fr_map_t frm_tab[NFRAMES];
 
@@ -53,6 +49,10 @@ struct  tty     tty[Ntty];	/* SLU buffers and mode control		*/
 int	numproc;		/* number of live user processes	*/
 int	currpid;		/* id of currently running process	*/
 int	reboot = 0;		/* non-zero after first boot		*/
+
+struct scPolicy scPolicyHead;
+struct scPolicy *scPtr = &scPolicyHead;
+struct Aging agingHead;
 
 int	rdyhead,rdytail;	/* head/tail of ready list (q indicies)	*/
 char 	vers[80];
@@ -231,22 +231,18 @@ sysinit()
 	init_bsm();	
 	set_evec(14, pfintr);
 
-
 	frm_tab[0].fr_status = 1;
 	frm_tab[0].fr_pid = NULLPROC;
 	frm_tab[0].fr_type = FR_DIR;	
 	i = 0;
 	while (i < 4) {
 		pd_t *ptr = FRAME0*NBPG + sizeof(pd_t)*i;
-		ptr->pd_write = 1;
 		ptr->pd_pres = 1; 
 		ptr->pd_base = i + FRAME0 + 1;
+		ptr->pd_write = 1;
 		i++;
 	}
 	pptr->pdbr = FRAME0*NBPG;
-	
-	// creating global page tables
-	// check the logic for pageNumber
 
 	i = 0;
 	while (i < 4) {		

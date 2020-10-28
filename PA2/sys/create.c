@@ -79,14 +79,11 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	savsp = (unsigned long)saddr;
 
 	
-	//Make the page directory for the current process
-	//kprintf("Making the page directory for the new process in create \n\n");	
 	int freeFramePointer = 0;
 	int t = get_frm(&freeFramePointer);
 	if (t == SYSERR) {
                return SYSERR;
         }
-	// kprintf("get_frm returned frame = %d and address = %d", t, freeFramePointer);
 	pptr->pdbr = freeFramePointer;
 	int frameId = /*t*/((int)freeFramePointer)/NBPG - FRAME0;
 	fr_map_t *frPtr = &frm_tab[frameId];	
@@ -134,7 +131,6 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	*pushsp = pptr->pesp = (unsigned long)saddr;
 
 	restore(ps);
-	//kprintf("\nProcess cretaed with PID = %d\n", pid);
 	return(pid);
 }
 

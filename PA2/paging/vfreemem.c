@@ -56,7 +56,5 @@ SYSCALL	vfreemem(block, size)
         }
         restore(ps);
         return(OK);
-	
-	kprintf("To be implemented!\n");
-	
+		
 }

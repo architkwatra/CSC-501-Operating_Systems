@@ -21,11 +21,13 @@ int removeProcPages(int pid) {
 
 	struct scPolicy *slow = &scPolicyHead, *fast = (&scPolicyHead)->next;
 	int i = 0;
-	if (q == NULL)
-		kprintf("No node in the policy queue\n");;
+	if (q == NULL) {
+		// kprintf("No node in the policy queue\n");
+		i++;
+	}
 
 	slow = &scPolicyHead;
-        fast = slow->next;
+    fast = slow->next;
 	i = 0;
 	while (i < 1024 && fast != &scPolicyHead) {
 		if (fast == NULL)
