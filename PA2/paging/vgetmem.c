@@ -36,8 +36,8 @@ WORD	*vgetmem(nbytes)
                         q->mnext = p->mnext;
                         restore(ps);
 			kprintf("11111---Returning %x from vgetmen \n", (WORD*)p);
-                        // return((WORD *)(4096*4096 + ((WORD *)p- (WORD *)(BACKING_STORE_BASE + proctab[getpid()].store*BACKING_STORE_UNIT_SIZE))));
-                        return ((WORD *)p);
+                        //return((WORD *)(4096*4096 + ((WORD *)p- (WORD *)(BACKING_STORE_BASE + proctab[getpid()].store*BACKING_STORE_UNIT_SIZE))));
+                       return ((WORD *) (p + 8388607));
                 } else if ( p->mlen > nbytes ) {
                         leftover = (struct mblock *)( (unsigned)p + nbytes );
                         q->mnext = leftover;
@@ -46,8 +46,8 @@ WORD	*vgetmem(nbytes)
 			kprintf("nbytes asked = %d and mlen = %d\n", nbytes, leftover->mlen);
                         restore(ps);
 			kprintf("2222 ---- Returning %x from vgetmen\n", (WORD*)p);
-			// return((WORD *)(4096*4096 + ((WORD *)p- (WORD *)(BACKING_STORE_BASE + proctab[getpid()].store*BACKING_STORE_UNIT_SIZE))));
-                        return ((WORD *)p);
+			//return((WORD *)(4096*4096 + ((WORD *)p- (WORD *)(BACKING_STORE_BASE + proctab[getpid()].store*BACKING_STORE_UNIT_SIZE))));
+                        return ((WORD *) (p + 8388607));
                 }
         restore(ps);
 	kprintf("Returning SYSERR from vgetmen\n");
