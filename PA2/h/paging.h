@@ -63,6 +63,7 @@ typedef struct{
 
 struct scPolicy{
 	struct scPolicy *next;
+  struct scPolicy *prev;
 	int idx;
 };
 
@@ -75,18 +76,13 @@ struct fifo{
 	int age;
 	struct fifo *next;
 };
+
 extern struct fifo fifohead;
 
 
-
-// int setPdPres(int);
-//int removeFramesOnKill(int); 
 int writeBackBS(int); 
 int writeBackDF(int);
-
-// int markIfDirty(int); 
-// int isAccSet(int);
-
+void setPolicyInfo();
 void freeBsm(int, int);
 
 extern bs_map_t bsm_tab[];
