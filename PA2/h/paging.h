@@ -80,13 +80,17 @@ struct fifo{
 extern struct fifo fifohead;
 
 
-int writeBackBS(int); 
+
+int setDirty(int);
+int writeBackDF(int);
+int writeDF(int);
 int writeBackDF(int);
 void setPolicyInfo();
 void freeBsm(int, int);
 
 extern bs_map_t bsm_tab[];
 extern fr_map_t frm_tab[];
+
 /* Prototypes for required API calls */
 SYSCALL xmmap(int, bsd_t, int);
 SYSCALL xunmap(int);

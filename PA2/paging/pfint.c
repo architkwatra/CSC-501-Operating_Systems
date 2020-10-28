@@ -47,6 +47,7 @@ SYSCALL pfint()
 	frm_tab[idx].fr_vpno = vp;
 	frm_tab[idx].fr_dirty = 0;
 	if (grpolicy() != AGING) {
+		
 		struct scPolicy frameToInsert;
 		frameToInsert.idx = idx;
 			

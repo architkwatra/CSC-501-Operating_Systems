@@ -736,7 +736,7 @@ int main() {
     // switch(s) {
 
 		//case 0:
-			//test0();
+			test0();
         // case 1:
     	   test1();
         //    break;
