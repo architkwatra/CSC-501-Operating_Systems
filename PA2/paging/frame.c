@@ -146,15 +146,14 @@ int setPdPres(int frameNumber) {
 
 int getAccBit(int frameIndex) {
 	virt_addr_t *vAddrStruct = (virt_addr_t*)&frm_tab[frameIndex].fr_vpno;
-	unsigned long pdeAddress = proctab[frm_tab[frameIndex].fr_pid].pdbr + 4*vAddrStruct->pd_offset;
-	pd_t *pdePtr = (pd_t*) pdeAddress;
-	unsigned int pt = pdePtr->pd_base*NBPG;
-
-	pt_t *ptePointer = (pt_t*) pt + 4*vAddrStruct->pt_offset;
-	if (ptePointer->pt_acc == 0) {
+	pd_t *pdePtr = (pd_t*)proctab[frm_tab[frameIndex].fr_pid].pdbr + 4*vAddrStruct->pd_offset;
+	pt_t *ptePointer = (pt_t*) (pdePtr->pd_base*NBPG + 4*vAddrStruct->pt_offset);
+	// pt_t *ptePointer = (pt_t*) pt + 4*vAddrStruct->pt_offset;
+	
+	if (!ptePointer->pt_acc) {
 		return frameIndex;
 	} else {
-		ptePointer->pt_acc = 0;
+		ptePointer->pt_acc = UNSET;
 	}
 	return SYSERR;
 }

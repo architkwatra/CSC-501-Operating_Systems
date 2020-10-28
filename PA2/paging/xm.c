@@ -17,11 +17,10 @@ SYSCALL xmmap(int virtpage, bsd_t source, int npages)
 	if (ptr->bs_isPrivate == 1) {
 		return SYSERR;
 	}
-	
 	int bsNpages = ptr->bs_npages;
 	if (!ptr->bs_status || (bsNpages >= npages)) {
 		
-		if (ptr->bs_status == 0)  
+		if (ptr->bs_status == UNSET)  
 			bsm_map(getpid(), virtpage, source, npages);
 		else
 			bsm_map(getpid(), virtpage, source, bsNpages);

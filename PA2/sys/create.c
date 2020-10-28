@@ -79,17 +79,18 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	savsp = (unsigned long)saddr;
 
 	
-	int freeFramePointer = 0;
-	int t = get_frm(&freeFramePointer);
+	int freeFrame = 0;
+	int t = get_frm(&freeFrame);
 	if (t == SYSERR) {
                return SYSERR;
         }
-	pptr->pdbr = freeFramePointer;
-	int frameId = /*t*/((int)freeFramePointer)/NBPG - FRAME0;
-	frm_tab[frameId].fr_status = 1;
-	frm_tab[frameId].fr_pid = pid;
-	frm_tab[frameId].fr_type = FR_DIR;
-	frm_tab[frameId].fr_vpno = (int)procaddr/NBPG;
+	pptr->pdbr = freeFrame;
+	int frameId = /*t*/((int)freeFrame)/NBPG - FRAME0;
+	fr_map_t *frPtr = &frm_tab[frameId];
+	frPtr->fr_status = 1;
+	frPtr->fr_pid = pid;
+	frPtr->fr_type = FR_DIR;
+	frPtr->fr_vpno = (int)procaddr/NBPG;
 	
 	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
 	int j = 0;
@@ -99,7 +100,6 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 			directoryPointer->pd_pres = 1;		
 			directoryPointer->pd_base = (FRAME0 + j + 1);
 		}
-
 		directoryPointer++;
 		++j;
 	}	
