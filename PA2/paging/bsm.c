@@ -6,6 +6,8 @@
 #include <proc.h>
 
 #define MAX_BSTORE 8
+
+int x = 6;
 /*-------------------------------------------------------------------------
  * init_bsm- initialize bsm_tab
  *-------------------------------------------------------------------------
@@ -14,9 +16,9 @@ SYSCALL init_bsm()
 {
 	 int i = 0;
     while (i < MAX_BSTORE) {
-		bsm_tab[i].bs_status = 0;
 		bsm_tab[i].bs_pid = -1;
 		bsm_tab[i].bs_vpno = -1;
+		bsm_tab[i].bs_status = 0;
 		bsm_tab[i].bs_npages = 256;
 		bsm_tab[i].bs_isPrivate = 0;
 		++i;
@@ -50,9 +52,9 @@ SYSCALL free_bsm(int i)
 {
 	bsm_tab[i].bs_status = 0;
 	bsm_tab[i].bs_pid = -1;
+	bsm_tab[i].bs_isPrivate = 0;
 	bsm_tab[i].bs_vpno = -1;
 	bsm_tab[i].bs_npages = 256;
-	bsm_tab[i].bs_isPrivate = 0;
 	return (OK);
 		
 }
@@ -101,8 +103,9 @@ SYSCALL bsm_map(int pid, int vpno, int source, int npages)
 
 void freeBsm(int count, int pid) {
 	int i = 1;
-	while (i < NPROC-1) {
-			if (proctab[i].store == proctab[pid].store && pid != i)
+	while (i > 0 && i < NPROC-1) {
+		struct pentry *ptr = &proctab[i];
+			if (ptr->store == ptr->store && pid != i)
 					count += 1;
 			++i;			
 	}
@@ -111,9 +114,10 @@ void freeBsm(int count, int pid) {
 
 SYSCALL bsm_unmap(int pid, int vpno, int flag)
 {
-	if (bsm_tab[proctab[pid].store].bs_isPrivate == 0) {
+	struct pentry *ptr = &proctab[pid];
+	if (bsm_tab[ptr->store].bs_isPrivate == 0) {
 		freeBsm(0, pid);
-		proctab[pid].store = -1;
+		ptr->store = -1;
 		return OK;
 	}
 	return SYSERR;
