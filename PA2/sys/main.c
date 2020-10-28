@@ -738,28 +738,28 @@ int main() {
 		//case 0:
 			test0();
         // case 1:
-    	   test1();
+    	//    test1();
         //    break;
         // case 2:
-    	   test2();
+    	//    test2();
         //    break;
         // case 3:
-    	   test3();
+    	//    test3();
         //    break;
         // case 4:
-    	   test4();
+    	//    test4();
         //    break;
         // case 5:
-    	   test5();
+    	//    test5();
         //    break;
         // case 6:
-    	   test6();
+    	//    test6();
         //    break;
         // case 7:
-           test7();
+        //    test7();
         //    break;
         // case 8:
-           test8();
+        //    test8();
         //    break;
         // default:
         //    kprintf("No test selected\n");

@@ -79,29 +79,31 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	savsp = (unsigned long)saddr;
 
 	
-	int frameIndex;
-	frameIndex = 0;
-	
-	int idx = get_frm(&frameIndex);
-	if (idx == SYSERR) {
+	//Make the page directory for the current process
+	//kprintf("Making the page directory for the new process in create \n\n");	
+	int freeFramePointer = 0;
+	int t = get_frm(&freeFramePointer);
+	if (t == SYSERR) {
                return SYSERR;
         }
-	pptr->pdbr = frameIndex;
-	fr_map_t *ptr = &frm_tab[idx];
-	ptr->fr_status = 1;
-	ptr->fr_type = FR_DIR;
-	ptr->fr_pid = pid;	
-	ptr->fr_vpno = (int) procaddr/NBPG;
+	// kprintf("get_frm returned frame = %d and address = %d", t, freeFramePointer);
+	pptr->pdbr = freeFramePointer;
+	int frameId = /*t*/((int)freeFramePointer)/NBPG - FRAME0;
+	frm_tab[frameId].fr_status = 1;
+	frm_tab[frameId].fr_pid = pid;
+	frm_tab[frameId].fr_type = FR_DIR;
+	//frm_tab[frameId].fr_vpno = (int)procaddr/NBPG;
 	
-	pd_t *dPtr = (pd_t*) pptr->pdbr;
+	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
 	int j = 0;
 	while (j < 1024) {
-		dPtr->pd_write = 1;
+		directoryPointer->pd_write = 1;
 		if (j < 4) {
-			dPtr->pd_pres = 1;		
-			dPtr->pd_base = (FRAME0 + j + 1);
+			directoryPointer->pd_pres = 1;		
+			directoryPointer->pd_base = (FRAME0 + j + 1);
 		}
-		dPtr++;
+
+		directoryPointer++;
 		++j;
 	}	
 		
