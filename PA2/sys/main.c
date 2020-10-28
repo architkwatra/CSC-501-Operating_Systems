@@ -390,8 +390,11 @@ void proc1_test5(int* ret) {
 
 	//kprintf("ready to allocate heap space\n");
 	x = vgetmem(1024);
+
+	kprintf("Value of x in main = %x \n", x);
+	
 	if ((x == NULL) || (x < 0x1000000)) {
-		kprintf("FAIL 1 in main\n");
+		kprintf("FAIL 1 in main since x = %x \n", x);
 		*ret = TFAILED;
 	    //kprintf("heap allocated at %x (address should be > 0x1000000 (16MB))\n", x);
     }
@@ -417,6 +420,7 @@ void proc1_test5(int* ret) {
 	x = vgetmem(50*NBPG);
 	y = vgetmem(50*NBPG);
 	z = vgetmem(50*NBPG);
+	kprintf("x = %x, y = %x, z = %x\n", x, y, z);
 	if ((x == SYSERR) || (y == SYSERR) || (z != SYSERR)){
 		kprintf("FAIL 4\n");
 		*ret = TFAILED;

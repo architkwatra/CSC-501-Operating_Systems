@@ -34,7 +34,7 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	disable(ps);
 	struct pentry *ptr = &proctab[pid];
 	if (pid == SYSERR) {
-		kprintf("FAIL 1\n");
+		kprintf("FAIL in vcreate since pid = %d\n", pid);
 		deleteCreatedTableData(pid);
 		return SYSERR;
 	}
@@ -55,11 +55,18 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 
 	bsm_tab[emptyStore].bs_isPrivate = 1;
 	struct mblock *mptr;
-	(proctab[pid].vmemlist)->mnext = mptr = (struct mblock*) BACKING_STORE_BASE + emptyStore*BACKING_STORE_UNIT_SIZE;
+	
+	proctab[pid].vmemlist = getmem(sizeof(struct mblock));
+	ear
+roctab[pid].vmemlist->mlen = hpages * NBPG;
+	proctab[pid].vmemlist->mnext = NULL;
+	proctab[pid].vhpnpages = hsize;
+
+	/*(proctab[pid].vmemlist)->mnext = mptr = (struct mblock*) (BACKING_STORE_BASE + emptyStore*BACKING_STORE_UNIT_SIZE);
 	proctab[pid].vhpnpages = hsize;
 	mptr->mlen = hsize*NBPG;
-	mptr->mnext = 0;
-		
+	mptr->mnext = 0;*/
+	kprintf("emptyStore store = %d, and vmemlist->mnext = %x and mlen = %d\n", emptyStore, (proctab[pid].vmemlist)->mnext, mptr->mlen);	
 	restore(ps);
 	return pid;
 
