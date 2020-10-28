@@ -1,3 +1,4 @@
+
 /* frame.c - manage physical frames */
 #include <conf.h>
 #include <kernel.h>
@@ -48,8 +49,7 @@ SYSCALL get_frm(int* avail)
 	while (i < NFRAMES) {
 		int frameStatus = frm_tab[i].fr_status;
 		if (!frameStatus) {
-			int page = (FRAME0 + i)*NBPG;
-			*avail = page;
+			*avail = (FRAME0 + i)*NBPG;
 			restore(ps);
 			return i;
 		}
@@ -57,7 +57,6 @@ SYSCALL get_frm(int* avail)
 	}
 	struct Aging *slow = &agingPolicyPtr;
 	struct Aging *fast = agingPolicyPtr.next;
-	struct Aging *temp;
 	struct Aging *prev = fast;	
 
 	int idx = -1;
@@ -83,8 +82,7 @@ SYSCALL get_frm(int* avail)
 		}
 
 	} else {
-		int k = 0;
-		while (fast && k<1024) {
+		while (fast) {
 			fast->age = (int) fast->age/2;
 			if (getAccBit(fast->idx) != -1) fast->age += 128;
 			if (fast->age < minAge) {
@@ -92,10 +90,7 @@ SYSCALL get_frm(int* avail)
 				prev = fast;
 			}			
 			slow = fast;
-			temp = fast;
-			fast->prev = temp;
 			fast = fast->next;
-			++k;
 		}
 		int fFrame = (prev->next)->idx;
 		prev->next = (prev->next)->next;
@@ -145,14 +140,26 @@ int setPdPres(int frameNumber) {
 
 int getAccBit(int frameIndex) {
 	virt_addr_t *vAddrStruct = (virt_addr_t*)&frm_tab[frameIndex].fr_vpno;
-	pd_t *pdePtr = (pd_t*)proctab[frm_tab[frameIndex].fr_pid].pdbr + 4*vAddrStruct->pd_offset;
-	pt_t *ptePointer = (pt_t*) (pdePtr->pd_base*NBPG + 4*vAddrStruct->pt_offset);
-	// pt_t *ptePointer = (pt_t*) pt + 4*vAddrStruct->pt_offset;
-	
-	if (!ptePointer->pt_acc) {
+	unsigned long pdeAddress = proctab[frm_tab[frameIndex].fr_pid].pdbr + 4*vAddrStruct->pd_offset;
+	pd_t *pdePtr = (pd_t*) pdeAddress;
+	unsigned int pt = pdePtr->pd_base*NBPG;
+
+	pt_t *ptePointer = (pt_t*) pt + 4*vAddrStruct->pt_offset;
+	if (ptePointer->pt_acc == 0) {
 		return frameIndex;
 	} else {
-		ptePointer->pt_acc = UNSET;
+		ptePointer->pt_acc = 0;
 	}
 	return SYSERR;
 }
+
+
+
+
+
+
+
+
+
+
+
