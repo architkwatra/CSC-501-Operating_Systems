@@ -326,7 +326,6 @@ int setDirty(int frameIndex) {
 	return OK;
 }
 
-
 int writeBackDF(int pid) {
 	int i = 0;
 	fr_map_t *ptr;
