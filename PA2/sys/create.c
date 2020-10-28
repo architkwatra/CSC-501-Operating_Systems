@@ -70,6 +70,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	pptr->pdevs[0] = pptr->pdevs[1] = pptr->ppagedev = BADDEV;
 
 
+	int j = 0;
 	pptr->store = -1;
 
 
@@ -83,6 +84,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	frameIndex = 0;
 
 	int idx = get_frm(&frameIndex);
+	pd_t *dPtr = (pd_t*) pptr->pdbr;
 	
 	if (idx == SYSERR) {
         return SYSERR;
@@ -90,21 +92,22 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	
 	pptr->pdbr = frameIndex;
 	fr_map_t *ptr = &frm_tab[idx];
-	ptr->fr_status = 1;
-	ptr->fr_type = FR_DIR;
-	ptr->fr_pid = pid;	
-	ptr->fr_vpno = (int) procaddr/NBPG;
-	
-	pd_t *dPtr = (pd_t*) pptr->pdbr;
-	int j = 0;
+	if (ptr) {
+		ptr->fr_status = 1;
+		ptr->fr_type = FR_DIR;
+		ptr->fr_pid = pid;	
+		ptr->fr_vpno = (int) procaddr/NBPG;
+	}
 	while (j < 1024) {
-		dPtr->pd_write = 1;
-		if (j < 4) {
-			dPtr->pd_pres = 1;		
-			dPtr->pd_base = (FRAME0 + j + 1);
+		if (dPtr) {
+			dPtr->pd_write = 1;
+			if (j < 4) {
+				dPtr->pd_pres = 1;		
+				dPtr->pd_base = (FRAME0 + j + 1);
+			}
+			dPtr++;
+			++j;
 		}
-		dPtr++;
-		++j;
 	}	
 		
 	/* push arguments */
