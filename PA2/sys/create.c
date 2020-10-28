@@ -79,28 +79,28 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	savsp = (unsigned long)saddr;
 
 	
-	int freeFrame = 0;
-	int t = get_frm(&freeFrame);
+	int freeFramePointer = 0;
+	int t = get_frm(&freeFramePointer);
 	if (t == SYSERR) {
                return SYSERR;
         }
-	pptr->pdbr = freeFrame;
-	int frameId = /*t*/((int)freeFrame)/NBPG - FRAME0;
-	fr_map_t *frPtr = &frm_tab[frameId];
-	frPtr->fr_status = 1;
-	frPtr->fr_pid = pid;
-	frPtr->fr_type = FR_DIR;
-	frPtr->fr_vpno = (int)procaddr/NBPG;
+	pptr->pdbr = freeFramePointer;
+	int frameId = /*t*/((int)freeFramePointer)/NBPG - FRAME0;
+	frm_tab[frameId].fr_status = 1;
+	frm_tab[frameId].fr_pid = pid;
+	frm_tab[frameId].fr_type = FR_DIR;
+	//frm_tab[frameId].fr_vpno = (int)procaddr/NBPG;
 	
-	pd_t *dPtr = (pd_t*) pptr->pdbr;
+	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
 	int j = 0;
 	while (j < 1024) {
-		dPtr->pd_write = 1;
+		directoryPointer->pd_write = 1;
 		if (j < 4) {
-			dPtr->pd_pres = 1;		
-			dPtr->pd_base = (FRAME0 + j + 1);
+			directoryPointer->pd_pres = 1;		
+			directoryPointer->pd_base = (FRAME0 + j + 1);
 		}
-		dPtr++;
+
+		directoryPointer++;
 		++j;
 	}	
 		
@@ -130,6 +130,7 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	*pushsp = pptr->pesp = (unsigned long)saddr;
 
 	restore(ps);
+	//kprintf("\nProcess cretaed with PID = %d\n", pid);
 	return(pid);
 }
 

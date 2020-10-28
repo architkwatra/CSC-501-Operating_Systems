@@ -57,7 +57,6 @@ SYSCALL get_frm(int* avail)
 	}
 	struct Aging *slow = &agingPolicyPtr;
 	struct Aging *fast = agingPolicyPtr.next;
-	struct Aging *temp;
 	struct Aging *prev = fast;	
 
 	int idx = -1;
@@ -91,10 +90,7 @@ SYSCALL get_frm(int* avail)
 				prev = fast;
 			}			
 			slow = fast;
-			temp = fast;
-			fast->prev = temp;
 			fast = fast->next;
-			
 		}
 		int fFrame = (prev->next)->idx;
 		prev->next = (prev->next)->next;
