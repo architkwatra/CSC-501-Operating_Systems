@@ -37,7 +37,8 @@ struct	mblock	memlist;	/* list of free memory blocks		*/
 
 struct scPolicy scPolicyHead;
 struct scPolicy *scPtr = &scPolicyHead;
-struct fifo fifohead;
+
+struct Aging agingPolicyPtr;
 
 bs_map_t bsm_tab[8];
 fr_map_t frm_tab[NFRAMES];
@@ -244,9 +245,6 @@ sysinit()
 		i++;
 	}
 	pptr->pdbr = FRAME0*NBPG;
-	
-	// creating global page tables
-	// check the logic for pageNumber
 
 	i = 0;
 	while (i < 4) {		

@@ -55,20 +55,24 @@ SYSCALL get_frm(int* avail)
 		}
 		i++;
 	}
-	struct fifo *fast = &fifohead;
-	struct fifo *slow = fifohead.next;
-	struct fifo *prev = fast;	
+	struct Aging *slow = &agingPolicyPtr;
+	struct Aging *fast = agingPolicyPtr.next;
+	struct Aging *temp;
+	struct Aging *prev = fast;	
+
 	int idx = -1;
 	int currPolicy = grpolicy();
 	int check = 1;
+	struct scPolicy *head = &scPolicyHead;
 	if (currPolicy == SC) {
 		while (check) {
-			if (scPtr->next == &scPolicyHead) {
+			if (scPtr->next == head) {
 				scPtr = scPolicyHead.next;
 			}
 			writeBackDF((scPtr->next)->frame);
 			int frm_tab_index = getAccBit((scPtr->next)->frame);
-			if (frm_tab_index == (scPtr->next)->frame) {
+			int policyFrame = (scPtr->next)->frame;
+			if (frm_tab_index == policyFrame) {
 				policyCommonStuff(frm_tab_index);
 				*avail = (FRAME0 + frm_tab_index)*NBPG;
 				scPtr->next = (scPtr->next)->next;
@@ -79,21 +83,26 @@ SYSCALL get_frm(int* avail)
 		}
 
 	} else {
-		while (slow) {
-			slow->age = (int) slow->age/2;
-			if (getAccBit(slow->idx) != -1) slow->age += 128;
-			if (slow->age < minAge) {
-				minAge = slow->age;
+		int k = 0;
+		while (fast && k<1024) {
+			fast->age = (int) fast->age/2;
+			if (getAccBit(fast->idx) != -1) fast->age += 128;
+			if (fast->age < minAge) {
+				minAge = fast->age;
 				prev = fast;
 			}			
-			fast = slow;
-			slow = slow->next;
+			slow = fast;
+			temp = fast;
+			fast->prev = temp;
+			fast = fast->next;
+			++k;
 		}
-		int freeFrameIndex = (prev->next)->idx;
+		int fFrame = (prev->next)->idx;
 		prev->next = (prev->next)->next;
-		policyCommonStuff(freeFrameIndex);
-		*avail = (FRAME0 + freeFrameIndex)*NBPG;	
-		return freeFrameIndex;
+		prev->prev = slow;
+		policyCommonStuff(fFrame);
+		*avail = (FRAME0 + fFrame)*NBPG;	
+		return fFrame;
 	}
 	restore(ps);
 	return SYSERR;
