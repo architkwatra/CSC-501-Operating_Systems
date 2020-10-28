@@ -63,19 +63,19 @@ SYSCALL get_frm(int* avail)
 	int check = 1;
 	if (currPolicy == SC) {
 		while (check) {
-			if (scPointer->next == &scqhead) {
-				scPointer = scqhead.next;
+			if (scPtr->next == &scPolicyHead) {
+				scPtr = scPolicyHead.next;
 			}
-			writeBackDF((scPointer->next)->idx);
-			int frm_tab_index = getAccBit((scPointer->next)->idx);
-			if (frm_tab_index == (scPointer->next)->idx) {
+			writeBackDF((scPtr->next)->idx);
+			int frm_tab_index = getAccBit((scPtr->next)->idx);
+			if (frm_tab_index == (scPtr->next)->idx) {
 				policyCommonStuff(frm_tab_index);
 				*avail = (FRAME0 + frm_tab_index)*NBPG;
-				scPointer->next = (scPointer->next)->next;
+				scPtr->next = (scPtr->next)->next;
 				restore(ps);
 				return frm_tab_index;
 			}	
-			scPointer = scPointer->next;
+			scPtr = scPtr->next;
 		}
 
 	} else {

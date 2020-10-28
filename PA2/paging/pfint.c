@@ -47,13 +47,13 @@ SYSCALL pfint()
 	frm_tab[idx].fr_vpno = vp;
 	frm_tab[idx].fr_dirty = 0;
 	if (grpolicy() != AGING) {
-		struct scq frameToInsert;
+		struct scPolicy frameToInsert;
 		frameToInsert.idx = idx;
 			
-		struct scq *tmp = scPointer->next;
-		scPointer->next = &frameToInsert;
+		struct scPolicy *tmp = scPtr->next;
+		scPtr->next = &frameToInsert;
 		frameToInsert.next = tmp;
-		scPointer = frameToInsert.next;
+		scPtr = frameToInsert.next;
 	}
 	else {
 		struct fifo frameToInsert;

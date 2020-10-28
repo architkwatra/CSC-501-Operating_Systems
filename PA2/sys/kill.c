@@ -19,15 +19,15 @@
 
 int removeProcPages(int pid) {
 
-	struct scq *slow = &scqhead, *fast = (&scqhead)->next;
+	struct scPolicy *slow = &scPolicyHead, *fast = (&scPolicyHead)->next;
 	int i = 0;
 	if (q == NULL)
 		kprintf("No node in the policy queue\n");;
 
-	slow = &scqhead;
+	slow = &scPolicyHead;
         fast = slow->next;
 	i = 0;
-	while (i < 1024 && fast != &scqhead) {
+	while (i < 1024 && fast != &scPolicyHead) {
 		if (fast == NULL)
 			return SYSERR;
 
@@ -42,7 +42,7 @@ int removeProcPages(int pid) {
 		}
 		++i;	
 		
-		if (fast == &scqhead) {
+		if (fast == &scPolicyHead) {
 			return OK;
 		}	
 	}

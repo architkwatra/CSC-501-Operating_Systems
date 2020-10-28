@@ -35,8 +35,8 @@ char	*maxaddr;		/* max memory address (set by sizmem)	*/
 struct	mblock	memlist;	/* list of free memory blocks		*/
 
 
-struct scq scqhead;
-struct scq *scPointer = &scqhead;
+struct scPolicy scPolicyHead;
+struct scPolicy *scPointer = &scPolicyHead;
 struct fifo fifohead;
 
 bs_map_t bsm_tab[8];

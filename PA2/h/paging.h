@@ -61,19 +61,21 @@ typedef struct{
 
 }fr_map_t;
 
-struct scq{
-	struct scq *next;
+struct scPolicy{
+	struct scPolicy *next;
 	int idx;
 };
+
+extern  struct  scPolicy  scPolicyHead;
+extern struct scPolicy *scPtr;
+
+
 struct fifo{
 	int idx;
 	int age;
 	struct fifo *next;
 };
 extern struct fifo fifohead;
-extern  struct  scq  scqhead;
-extern int frm;
-extern struct scq *scPointer;
 
 
 

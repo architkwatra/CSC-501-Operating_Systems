@@ -61,7 +61,6 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	mptr->mlen = hsize*NBPG;
 	mptr->mnext = 0;
 	
-	
 	restore(ps);
 	return pid;
 
