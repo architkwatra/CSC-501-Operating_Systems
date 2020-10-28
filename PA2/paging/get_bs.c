@@ -9,10 +9,9 @@ int get_bs(int bs_id, unsigned int npages) {
 		return SYSERR;
 	bs_map_t *bsPtr = &bsm_tab[bs_id];
 	if (bsPtr->bs_status) {
-		
-		if (bsPtr->bs_isPrivate == 0)
+		int check = 1;
+		if (bsPtr->bs_isPrivate != check)
 			return bsPtr->bs_npages;
-
 		else 
 			return SYSERR;
 	}
