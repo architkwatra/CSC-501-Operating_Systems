@@ -64,7 +64,7 @@ typedef struct{
 struct scPolicy{
 	struct scPolicy *next;
   struct scPolicy *prev;
-	int idx;
+	int frame;
 };
 
 extern  struct  scPolicy  scPolicyHead;

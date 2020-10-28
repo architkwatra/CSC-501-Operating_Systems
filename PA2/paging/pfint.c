@@ -48,13 +48,16 @@ SYSCALL pfint()
 	frm_tab[idx].fr_dirty = 0;
 	if (grpolicy() != AGING) {
 		
-		struct scPolicy frameToInsert;
-		frameToInsert.idx = idx;
-			
-		struct scPolicy *tmp = scPtr->next;
-		scPtr->next = &frameToInsert;
-		frameToInsert.next = tmp;
-		scPtr = frameToInsert.next;
+		struct scPolicy *node;
+		struct scPolicy *temp = scPtr->next;
+
+		node->frame = idx;
+		
+		scPtr->next = node;
+		node->prev = scPtr;
+		node->next = temp;
+		temp->prev = node;
+		scPtr = node->next;
 	}
 	else {
 		struct fifo frameToInsert;

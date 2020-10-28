@@ -31,7 +31,7 @@ int removeProcPages(int pid) {
 		if (fast == NULL)
 			return SYSERR;
 
-		if (frm_tab[fast->idx].fr_pid == pid) {
+		if (frm_tab[fast->frame].fr_pid == pid) {
 			fast = fast->next;
 			slow->next = fast;
 			frm_tab[pid].fr_status = 0;

@@ -66,9 +66,9 @@ SYSCALL get_frm(int* avail)
 			if (scPtr->next == &scPolicyHead) {
 				scPtr = scPolicyHead.next;
 			}
-			writeBackDF((scPtr->next)->idx);
-			int frm_tab_index = getAccBit((scPtr->next)->idx);
-			if (frm_tab_index == (scPtr->next)->idx) {
+			writeBackDF((scPtr->next)->frame);
+			int frm_tab_index = getAccBit((scPtr->next)->frame);
+			if (frm_tab_index == (scPtr->next)->frame) {
 				policyCommonStuff(frm_tab_index);
 				*avail = (FRAME0 + frm_tab_index)*NBPG;
 				scPtr->next = (scPtr->next)->next;
