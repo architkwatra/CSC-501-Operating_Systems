@@ -67,9 +67,7 @@ SYSCALL get_frm(int* avail)
 	int check = 1;
 	struct scPolicy *head = &scPolicyHead;
 	if (currPolicy == SC) {
-		int l = 0;
-		while (check && l < 1024) {
-			
+		while (check) {
 			if (scPtr->next == head) {
 				scPtr = scPolicyHead.next;
 			}
@@ -81,13 +79,10 @@ SYSCALL get_frm(int* avail)
 				int temp = (FRAME0 + frm_tab_index)*NBPG;
 				*avail = temp;
 				scPtr->next = (scPtr->next)->next;
-				scPtr->prev = NULL;
 				restore(ps);
 				return frm_tab_index;
 			}	
 			scPtr = scPtr->next;
-			scPtr->prev = NULL;
-			++l;
 		}
 
 	} else {
@@ -99,17 +94,11 @@ SYSCALL get_frm(int* avail)
 				minAge = fast->age;
 				prev = fast;
 			}			
-
 			slow = fast;
 			temp = fast;
-			if (fast) {
-				fast->prev = temp;
-				fast = fast->next;
-			}
-			while (1) {
-				++k;
-				break;
-			}
+			fast->prev = temp;
+			fast = fast->next;
+			++k;
 		}
 		int fFrame = (prev->next)->idx;
 		prev->next = (prev->next)->next;
@@ -129,31 +118,26 @@ SYSCALL get_frm(int* avail)
 SYSCALL free_frm(int i)
 {
 	fr_map_t *ptr = &frm_tab[i];
-	ptr->fr_vpno = -1;	
-	ptr->fr_pid = -1;
+	ptr->fr_vpno = -1;
 	ptr->fr_status = 0;
+	ptr->fr_pid = -1;
 	if (ptr->fr_dirty) {
 		writeDF(i);
 	}
 	return OK;
 }
 
-int getTranslatedAddress(virt_addr_t *a) {
+void getTranslatedAddress(virt_addr_t *a) {
 		return a;
 } 
 static unsigned long *tlb;
-
 int setPdPres(int frameNumber) {
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[frameNumber].fr_vpno;
 	pd_t *pdePtr = (pt_t*)(proctab[frm_tab[frameNumber].fr_pid].pdbr + sizeof(pt_t)*vAddrStruct->pd_offset);
 	pt_t *ptePtr = pdePtr->pd_base*4096 + sizeof(pt_t)*vAddrStruct->pt_offset;
-	int temp = getTranslatedAddress((virt_addr_t *)NBPG);
-	if (temp) {
-		ptePtr->pt_pres = UNSET;	
-	}
-	ptePtr->pt_pres = UNSET;
+
+	ptePtr->pt_pres = 0;
 	frm_tab[frameNumber].fr_refcnt = frm_tab[frameNumber].fr_refcnt - 1;
-	
 	if (frm_tab[frameNumber].fr_pid == getpid()) {
 		tlb = frm_tab[frameNumber].fr_vpno*NBPG;
 		asm("invlpg tlb");	
