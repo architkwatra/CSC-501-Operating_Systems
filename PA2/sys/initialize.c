@@ -35,14 +35,9 @@ int	nextqueue;		/* next slot in q structure to use	*/
 char	*maxaddr;		/* max memory address (set by sizmem)	*/
 struct	mblock	memlist;	/* list of free memory blocks		*/
 
-
-void setPolicyInfo() {
-
-	struct scPolicy scPolicyHead;
-	struct scPolicy *scPtr = &scPolicyHead;
-	struct fifo fifohead;
-}
-
+struct scPolicy scPolicyHead;
+struct scPolicy *scPtr = &scPolicyHead;
+struct fifo fifohead;
 
 bs_map_t bsm_tab[8];
 fr_map_t frm_tab[NFRAMES];
@@ -232,7 +227,6 @@ sysinit()
 	rdytail = 1 + (rdyhead=newqueue());/* initialize ready list */	
 	
 	
-	setPolicyInfo();
 	init_frm();
 	init_bsm();	
 	set_evec(14, pfintr);
