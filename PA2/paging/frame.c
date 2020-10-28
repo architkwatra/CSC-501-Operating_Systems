@@ -154,10 +154,10 @@ int setPdPres(int frameNumber) {
 	ptePtr->pt_pres = UNSET;
 	frm_tab[frameNumber].fr_refcnt = frm_tab[frameNumber].fr_refcnt - 1;
 	
-	if (frm_tab[frameNumber].fr_pid == getpid()) {
-		tlb = frm_tab[frameNumber].fr_vpno*NBPG;
-		asm("invlpg tlb");	
-	}
+	// if (frm_tab[frameNumber].fr_pid == getpid()) {
+	// 	tlb = frm_tab[frameNumber].fr_vpno*NBPG;
+	// 	asm("invlpg tlb");	
+	// }
 	if (!frm_tab[frameNumber].fr_refcnt) pdePtr->pd_pres = 0; 
 	return OK;
 }
