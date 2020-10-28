@@ -17,10 +17,10 @@ SYSCALL init_frm()
 	int i = 0;
 	while (i < NFRAMES) {
 		frm_tab[i].fr_status = 0;
-		frm_tab[i].fr_pid = -1;
-		frm_tab[i].fr_vpno = -1;
-		frm_tab[i].fr_type = FR_PAGE;
+		frm_tab[i].fr_pid = -1;		
 		frm_tab[i].fr_dirty = 0;
+		frm_tab[i].fr_vpno = -1;
+		frm_tab[i].fr_type = FR_PAGE;	
 		frm_tab[i].fr_refcnt = 0;
 		ptr++;
 		i++;
@@ -56,6 +56,7 @@ SYSCALL get_frm(int* avail)
 		}
 		i++;
 	}
+
 	struct Aging *slow = &agingPolicyPtr;
 	struct Aging *fast = agingPolicyPtr.next;
 	struct Aging *temp;
@@ -66,7 +67,9 @@ SYSCALL get_frm(int* avail)
 	int check = 1;
 	struct scPolicy *head = &scPolicyHead;
 	if (currPolicy == SC) {
-		while (check) {
+		int l = 0;
+		while (check && l < 1024) {
+			
 			if (scPtr->next == head) {
 				scPtr = scPolicyHead.next;
 			}
@@ -75,12 +78,16 @@ SYSCALL get_frm(int* avail)
 			int policyFrame = (scPtr->next)->frame;
 			if (frm_tab_index == policyFrame) {
 				policyCommonStuff(frm_tab_index);
-				*avail = (FRAME0 + frm_tab_index)*NBPG;
+				int temp = (FRAME0 + frm_tab_index)*NBPG;
+				*avail = temp;
 				scPtr->next = (scPtr->next)->next;
+				scPtr->prev = NULL;
 				restore(ps);
 				return frm_tab_index;
 			}	
 			scPtr = scPtr->next;
+			scPtr->prev = NULL;
+			++l;
 		}
 
 	} else {
@@ -92,11 +99,17 @@ SYSCALL get_frm(int* avail)
 				minAge = fast->age;
 				prev = fast;
 			}			
+
 			slow = fast;
 			temp = fast;
-			fast->prev = temp;
-			fast = fast->next;
-			++k;
+			if (fast) {
+				fast->prev = temp;
+				fast = fast->next;
+			}
+			while (1) {
+				++k;
+				break;
+			}
 		}
 		int fFrame = (prev->next)->idx;
 		prev->next = (prev->next)->next;
@@ -116,30 +129,35 @@ SYSCALL get_frm(int* avail)
 SYSCALL free_frm(int i)
 {
 	fr_map_t *ptr = &frm_tab[i];
-	ptr->fr_vpno = -1;
-	ptr->fr_status = 0;
+	ptr->fr_vpno = -1;	
 	ptr->fr_pid = -1;
+	ptr->fr_status = 0;
 	if (ptr->fr_dirty) {
 		writeDF(i);
 	}
 	return OK;
 }
 
-void getTranslatedAddress(virt_addr_t *a) {
+int getTranslatedAddress(virt_addr_t *a) {
 		return a;
 } 
 static unsigned long *tlb;
+
 int setPdPres(int frameNumber) {
 	virt_addr_t *vAddrStruct = (virt_addr_t*)& frm_tab[frameNumber].fr_vpno;
 	pd_t *pdePtr = (pt_t*)(proctab[frm_tab[frameNumber].fr_pid].pdbr + sizeof(pt_t)*vAddrStruct->pd_offset);
 	pt_t *ptePtr = pdePtr->pd_base*4096 + sizeof(pt_t)*vAddrStruct->pt_offset;
-
-	ptePtr->pt_pres = 0;
-	frm_tab[frameNumber].fr_refcnt = frm_tab[frameNumber].fr_refcnt - 1;
-	if (frm_tab[frameNumber].fr_pid == getpid()) {
-		tlb = frm_tab[frameNumber].fr_vpno*NBPG;
-		asm("invlpg tlb");	
+	int temp = getTranslatedAddress((virt_addr_t *)NBPG);
+	if (temp) {
+		ptePtr->pt_pres = UNSET;	
 	}
+	ptePtr->pt_pres = UNSET;
+	frm_tab[frameNumber].fr_refcnt = frm_tab[frameNumber].fr_refcnt - 1;
+	
+	// if (frm_tab[frameNumber].fr_pid == getpid()) {
+	// 	tlb = frm_tab[frameNumber].fr_vpno*NBPG;
+	// 	asm("invlpg tlb");	
+	// }
 	if (!frm_tab[frameNumber].fr_refcnt) pdePtr->pd_pres = 0; 
 	return OK;
 }

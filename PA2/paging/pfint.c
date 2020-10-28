@@ -40,7 +40,7 @@ SYSCALL pfint()
 	frmTabPtr->fr_status = 1;
 	frmTabPtr->fr_type = FR_PAGE;
 	frmTabPtr->fr_pid = getpid();
-	frmTabPtr->fr_vpno = vp;
+	frmTabPtr->fr_vpno = faultingPage>>12;
 	frmTabPtr->fr_dirty = 0;
 	if (grpolicy() != AGING) {
 		
