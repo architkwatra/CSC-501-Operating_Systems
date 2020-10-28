@@ -72,7 +72,7 @@ extern struct scPolicy *scPtr;
 
 
 struct Aging{
-	int idx;
+	int frame;
 	int age;
   struct Aging *prev;
 	struct Aging *next;

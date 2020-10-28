@@ -58,9 +58,9 @@ SYSCALL pfint()
 	}
 	else {
 		struct Aging frameToInsert;
-        frameToInsert.idx = idx;
+        frameToInsert.frame = idx;
 		frameToInsert.age = 255;
-		
+
 		frameToInsert.next = agingHead.next;
 		agingHead.next = &frameToInsert;
 	}

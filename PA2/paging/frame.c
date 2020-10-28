@@ -81,7 +81,7 @@ SYSCALL get_frm(int* avail)
 	} else {
 		while (slow) {
 			slow->age = (int) slow->age/2;
-			if (getAccBit(slow->idx) != -1) slow->age += 128;
+			if (getAccBit(slow->frame) != -1) slow->age += 128;
 			if (slow->age < minAge) {
 				minAge = slow->age;
 				prev = fast;
@@ -89,7 +89,7 @@ SYSCALL get_frm(int* avail)
 			fast = slow;
 			slow = slow->next;
 		}
-		int freeFrameIndex = (prev->next)->idx;
+		int freeFrameIndex = (prev->next)->frame;
 		prev->next = (prev->next)->next;
 		policyCommonStuff(freeFrameIndex);
 		*avail = (FRAME0 + freeFrameIndex)*NBPG;	
