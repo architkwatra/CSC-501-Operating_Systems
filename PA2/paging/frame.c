@@ -171,7 +171,6 @@ int writeBackDF(int pid) {
 				return SYSERR;
 			}
 		}
-
 		i++;
 	}
 	return OK;
@@ -181,7 +180,7 @@ int writeDF(int i) {
 
 		fr_map_t *ptr = &frm_tab[i];
 		int store, pageth, pid = ptr->fr_pid, vpno = NBPG*ptr->fr_vpno;
-		
+
 		int catch = bsm_lookup(pid, vpno, &store, &pageth); 
 		if (catch != SYSERR) { 
 			write_bs((char *) ((FRAME0 + i)*NBPG), store, pageth);
