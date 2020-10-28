@@ -71,13 +71,14 @@ extern  struct  scPolicy  scPolicyHead;
 extern struct scPolicy *scPtr;
 
 
-struct fifo{
+struct Aging{
 	int idx;
 	int age;
-	struct fifo *next;
+  struct Aging *prev;
+	struct Aging *next;
 };
 
-extern struct fifo fifohead;
+extern struct Aging agingHead;
 
 
 

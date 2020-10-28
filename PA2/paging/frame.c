@@ -55,9 +55,9 @@ SYSCALL get_frm(int* avail)
 		}
 		i++;
 	}
-	struct fifo *fast = &fifohead;
-	struct fifo *slow = fifohead.next;
-	struct fifo *prev = fast;	
+	struct Aging *fast = &agingHead;
+	struct Aging *slow = agingHead.next;
+	struct Aging *prev = fast;	
 	int idx = -1;
 	int currPolicy = grpolicy();
 	int check = 1;

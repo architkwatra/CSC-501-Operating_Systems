@@ -14,10 +14,6 @@ SYSCALL pfint()
 	unsigned long faultingPage = read_cr2();
 	int vp = faultingPage>>12;
 	virt_addr_t *vAddrStruct = (virt_addr_t*)&faultingPage;
-	// unsigned long pdbrCurrentProcess = proctab[currpid].pdbr;
-	// unsigned long ptNumber = vAddrStruct->pd_offset;
-	// unsigned long pageNumber = vAddrStruct->pt_offset;
-	// unsigned long pdeAddress = pdbrCurrentProcess + 4*ptNumber;
 	pd_t *pdePtr = (pd_t*) (proctab[currpid].pdbr + 4*vAddrStruct->pd_offset);
 	int framePointer;
 	if (pdePtr->pd_pres == 0) {
@@ -60,12 +56,12 @@ SYSCALL pfint()
 		scPtr = node->next;
 	}
 	else {
-		struct fifo frameToInsert;
+		struct Aging frameToInsert;
         frameToInsert.idx = idx;
 		frameToInsert.age = 255;
 
-		frameToInsert.next = fifohead.next;
-		fifohead.next = &frameToInsert;
+		frameToInsert.next = agingHead.next;
+		agingHead.next = &frameToInsert;
 	}
 	
 	int store, pageth;

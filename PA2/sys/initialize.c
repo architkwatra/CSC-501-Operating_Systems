@@ -37,7 +37,7 @@ struct	mblock	memlist;	/* list of free memory blocks		*/
 
 struct scPolicy scPolicyHead;
 struct scPolicy *scPtr = &scPolicyHead;
-struct fifo fifohead;
+struct Aging agingHead;
 
 bs_map_t bsm_tab[8];
 fr_map_t frm_tab[NFRAMES];
