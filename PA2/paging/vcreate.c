@@ -8,7 +8,7 @@
 #include <mem.h>
 #include <io.h>
 #include <paging.h>
-
+int count = 0;
 /*
 static unsigned long esp;
 */
@@ -46,7 +46,7 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 		deleteCreatedTableData(pid);	
 		return SYSERR;
 	}
-
+	int a = NULL;
 	int vaddress = (int)procaddr>>12;
 	int check = bsm_map(pid, vaddress, emptyStore, hsize);
 	if (check == SYSERR)

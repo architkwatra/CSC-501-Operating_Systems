@@ -14,20 +14,15 @@ extern struct pentry proctab[];
 WORD	*vgetmem(nbytes)
 	unsigned nbytes;
 {
-        //check if this is required or not
-	//struct mblock *ptr = &(proctab[currpid]->vmemlist);
-		
-	//kprintf("Inside vgetmem()\n");
+
 	STATWORD ps;
         struct  mblock  *p, *q, *leftover;
 
         disable(ps);
         if (nbytes==0 || proctab[getpid()].vmemlist->mnext== (struct mblock *) NULL) {
                 restore(ps);
-		kprintf("111 ----- Returning SYSERR from vgetmen\n");
                 return( (WORD *)SYSERR);
         }
-	//kprintf("vmemlist points at %x\n", proctab[getpid()].vmemlist->mnext);
         nbytes = (unsigned int) roundmb(nbytes);
         for (q = proctab[getpid()].vmemlist, p = proctab[getpid()].vmemlist->mnext ;
              p != (struct mblock *) NULL ;
@@ -35,24 +30,16 @@ WORD	*vgetmem(nbytes)
                 if ( p->mlen == nbytes) {
                         q->mnext = p->mnext;
                         restore(ps);
-			kprintf("11111---Returning %x from vgetmen \n", (WORD*)p);
-                        // return((WORD *)(4096*4096 + ((WORD *)p- (WORD *)(BACKING_STORE_BASE + proctab[getpid()].store*BACKING_STORE_UNIT_SIZE))));
-                        // return ((WORD *) (p + 8388607));
                         return ((WORD *)p);
                 } else if ( p->mlen > nbytes ) {
                         leftover = (struct mblock *)( (unsigned)p + nbytes );
                         q->mnext = leftover;
                         leftover->mnext = p->mnext;
                         leftover->mlen = p->mlen - nbytes;
-			kprintf("nbytes asked = %d and mlen = %d\n", nbytes, leftover->mlen);
                         restore(ps);
-			kprintf("2222 ---- Returning %x from vgetmen\n", (WORD*)p);
-			//return((WORD *)(4096*4096 + ((WORD *)p- (WORD *)(BACKING_STORE_BASE + proctab[getpid()].store*BACKING_STORE_UNIT_SIZE))));
-                        // return ((WORD *) (p + 8388607));
                         return ((WORD *)p);
                 }
         restore(ps);
-	kprintf("Returning SYSERR from vgetmen\n");
         return( (WORD *)SYSERR );
 }
 
