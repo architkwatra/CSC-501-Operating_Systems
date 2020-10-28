@@ -1,3 +1,5 @@
+/* bsm.c - manage the backing store mapping*/
+
 #include <conf.h>
 #include <kernel.h>
 #include <paging.h>
@@ -116,3 +118,5 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
 	}
 	return SYSERR;
 }
+
+
