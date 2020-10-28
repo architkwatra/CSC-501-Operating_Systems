@@ -84,8 +84,9 @@ int	resched()
 #endif
 
 	write_cr3(nptr->pdbr);	
-	if (lastProcPid != NULLPROC && lastProcPid != 49)
-		writeBackDF(lastProcPid);
+	if (lastProcPid != 49) 
+		if (lastProcPid != NULLPROC)
+			writeBackDF(lastProcPid);
 	ctxsw(&optr->pesp, optr->pirmask, &nptr->pesp, nptr->pirmask);
 
 #ifdef	DEBUG
