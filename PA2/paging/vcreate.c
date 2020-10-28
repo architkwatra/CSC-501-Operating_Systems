@@ -55,10 +55,10 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 
 	bsm_tab[emptyStore].bs_isPrivate = 1;
 	struct mblock *mptr;
-	
+
+	struct pentry *procPtr = &proctab[pid];	
 	proctab[pid].vmemlist = getmem(sizeof(struct mblock));
-	ear
-roctab[pid].vmemlist->mlen = hpages * NBPG;
+	proctab[pid].vmemlist->mlen = hsize* NBPG;
 	proctab[pid].vmemlist->mnext = NULL;
 	proctab[pid].vhpnpages = hsize;
 
