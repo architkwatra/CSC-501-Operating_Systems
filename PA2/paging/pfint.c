@@ -16,32 +16,32 @@ SYSCALL pfint()
 	virt_addr_t *vAddrStruct = (virt_addr_t*)&faultingPage;
 	pd_t *pdePtr = (pd_t*) (proctab[currpid].pdbr + 4*vAddrStruct->pd_offset);
 	int framePointer, store, pageth;
-	if (pdePtr->pd_pres == 0) {
-
+	fr_map_t *frmTabPtr;
+	if (pdePtr->pd_pres == 0) {		
 		int idx = get_frm(&framePointer);
+		frmTabPtr = &frm_tab[idx];
 		if (idx == SYSERR) {
-                 	return SYSERR;
-	        }
-		
-		frm_tab[idx].fr_status = 1;
-		frm_tab[idx].fr_type = FR_TBL;
-		frm_tab[idx].fr_pid = getpid();
-		pdePtr->pd_pres = 1;
+            return SYSERR;
+	    }
+		frmTabPtr->fr_status = 1;		
+		frmTabPtr->fr_pid = getpid();
 		pdePtr->pd_write = 1;
+		pdePtr->pd_pres = 1;		
 		pdePtr->pd_base = (int)framePointer/NBPG;
+		frmTabPtr->fr_type = FR_TBL;
 	}
 	int idx = pdePtr->pd_base - FRAME0;
-	frm_tab[idx].fr_refcnt++;
+	frmTabPtr->fr_refcnt++;
 	idx = get_frm(&framePointer);
 	if (idx == SYSERR) {
 		return SYSERR;
 	}
 
-	frm_tab[idx].fr_status = 1;
-	frm_tab[idx].fr_type = FR_PAGE;
-	frm_tab[idx].fr_pid = getpid();
-	frm_tab[idx].fr_vpno = vp;
-	frm_tab[idx].fr_dirty = 0;
+	frmTabPtr->fr_status = 1;
+	frmTabPtr->fr_type = FR_PAGE;
+	frmTabPtr->fr_pid = getpid();
+	frmTabPtr->fr_vpno = vp;
+	frmTabPtr->fr_dirty = 0;
 	if (grpolicy() != AGING) {
 		
 		struct scPolicy *node;

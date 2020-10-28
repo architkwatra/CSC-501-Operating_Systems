@@ -29,7 +29,6 @@ WORD	*vgetmem(nbytes)
                 if ( p->mlen == nbytes) {
                         q->mnext = p->mnext;
                         restore(ps);
-			kprintf("11111---Returning %x from vgetmen \n", (WORD*)p);
                         // return((WORD *)(4096*4096 + ((WORD *)p- (WORD *)(BACKING_STORE_BASE + proctab[getpid()].store*BACKING_STORE_UNIT_SIZE))));
                         // return ((WORD *) (p + 8388607));
                         return ((WORD *)p);
@@ -38,9 +37,7 @@ WORD	*vgetmem(nbytes)
                         q->mnext = leftover;
                         leftover->mnext = p->mnext;
                         leftover->mlen = p->mlen - nbytes;
-			kprintf("nbytes asked = %d and mlen = %d\n", nbytes, leftover->mlen);
                         restore(ps);
-			kprintf("2222 ---- Returning %x from vgetmen\n", (WORD*)p);
 			//return((WORD *)(4096*4096 + ((WORD *)p- (WORD *)(BACKING_STORE_BASE + proctab[getpid()].store*BACKING_STORE_UNIT_SIZE))));
                         // return ((WORD *) (p + 8388607));
                         return ((WORD *)p);

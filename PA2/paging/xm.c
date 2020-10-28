@@ -40,7 +40,7 @@ SYSCALL xmmap(int virtpage, bsd_t source, int npages)
 SYSCALL xmunmap(int virtpage)
 {	
 	writeBackDF(getpid());
-	bsm_unmap(getpid(), virtpage, 0);
+	bsm_unmap(getpid(), virtpage, UNSET);
 	return OK;	
 
 }

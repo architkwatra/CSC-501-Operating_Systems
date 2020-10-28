@@ -37,10 +37,8 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 		deleteCreatedTableData(pid);
 		return SYSERR;
 	}
-	//used in xmmap
-	ptr->isPrivate = 1;
 
-	//get_bsm will return a free entry from bsm_tab by checking its status
+	ptr->isPrivate = SET;
 	int emptyStore = get_bsm(NULL);
 	if (emptyStore == SYSERR) {
 		deleteCreatedTableData(pid);	
@@ -54,7 +52,6 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 
 	bsm_tab[emptyStore].bs_isPrivate = 1;
 	struct mblock *mptr;
-
 	(proctab[pid].vmemlist)->mnext = (struct mblock*) (BACKING_STORE_BASE + emptyStore*BACKING_STORE_UNIT_SIZE);
 	mptr = (proctab[pid].vmemlist)->mnext;
 	proctab[pid].vhpnpages = hsize;
@@ -90,10 +87,9 @@ void deleteCreatedTableData(int pid) {
 	int i = 0;
 	while (i<NFRAMES) {
 		if (frm_tab[i].fr_pid == pid)
-			frm_tab[i].fr_status = 0;
+			frm_tab[i].fr_status = UNSET;
 		++i;
 	}
-
 }
 
 

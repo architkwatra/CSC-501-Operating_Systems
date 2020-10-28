@@ -92,15 +92,15 @@ SYSCALL create(procaddr,ssize,priority,name,nargs,args)
 	frPtr->fr_type = FR_DIR;
 	frPtr->fr_vpno = (int)procaddr/NBPG;
 	
-	pd_t *directoryPointer = (pd_t*) pptr->pdbr;
+	pd_t *dPtr = (pd_t*) pptr->pdbr;
 	int j = 0;
 	while (j < 1024) {
-		directoryPointer->pd_write = 1;
+		dPtr->pd_write = 1;
 		if (j < 4) {
-			directoryPointer->pd_pres = 1;		
-			directoryPointer->pd_base = (FRAME0 + j + 1);
+			dPtr->pd_pres = 1;		
+			dPtr->pd_base = (FRAME0 + j + 1);
 		}
-		directoryPointer++;
+		dPtr++;
 		++j;
 	}	
 		
