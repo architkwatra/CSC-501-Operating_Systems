@@ -8,7 +8,7 @@ int linit() {
 
     int i;
     for (i=0 ; i<NLOCKS ; i++) {	/* initialize locks */
-		(lptr = &rwlock_tab[i])->lstate = LFREE;
-		lptr->lqtail = 1 + (lptr->lqhead = newqueue());
+      (lptr = &rwlock_tab[i])->lstate = LFREE;
+      lptr->lqtail = 1 + (lptr->lqhead = newqueue());
 	}
 }

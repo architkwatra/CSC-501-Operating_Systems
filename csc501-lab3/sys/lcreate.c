@@ -25,7 +25,7 @@ SYSCALL lcreate(int count)
 		return(SYSERR);
 	}
 	rwlocks_tab[lock].lcnt = count;
-	/* sqhead and sqtail were initialized at system startup */
+	/* lqhead and lqtail were initialized at system startup */
 	restore(ps);
 	return(lock);
 }

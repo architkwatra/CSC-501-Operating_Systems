@@ -62,10 +62,11 @@ struct	pentry	{
 	int	pwaitret;
 
 	// my changes
+	int waittime;
 	int pinh;
 	int locksheld[NLOCKS];
 	int locksheldpointer;
-	int plockid;
+	int plockdesc;
 };
 
 

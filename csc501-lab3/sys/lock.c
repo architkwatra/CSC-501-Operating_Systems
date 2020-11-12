@@ -11,6 +11,7 @@ int lock(int ldesc, int type, int lprio) {
 
     STATWORD ps;
     disable(ps);
+    // Why LFREE returns an error (in semaphore)??
 	if (isbadlock(ldesc) || (lptr = &rwlocks_tab[ldesc])->lstate==LFREE) {
 		restore(ps);
 		return(SYSERR);
@@ -18,7 +19,7 @@ int lock(int ldesc, int type, int lprio) {
 	
     int pid = getpid();
 
-    if (lptr->lstate == DELETED) {
+    if (lptr->lstate == DELETED ||  lptr->lstate == LFREE) {
         
         // basic lock initializations
         lptr->lstate = LUSED;
@@ -46,7 +47,6 @@ int lock(int ldesc, int type, int lprio) {
 
                 if (writeProc == SYSERR || /* writeProc.prio < curproc.prio */) {
                     // give lock to the READER
-                    
 
                     // basic lock initializations
                     // lptr->lstate = LUSED; // This would already be done by the condition above
@@ -60,8 +60,6 @@ int lock(int ldesc, int type, int lprio) {
                     // adding the lock to the proctab bit mask
                     proctab[pid].locksheld[ldesc] = 1;
 
-                    
-
                 } else {
 
                     // Make reader wait
@@ -70,20 +68,35 @@ int lock(int ldesc, int type, int lprio) {
                     
                     // Do we need to do this as well as lwaitret??
                     pptr->pwaitret = OK;
+                    pptr->plockdesc = ldesc;
+                    pptr->waittime = ctr1000;
+
                     lptr->lwaitret = OK;
 
-
-                    lptr->lprio = getHighestPriorityFromWaitList(lptr->head);
+                    // check for this logic. Check for the argument
+                    lptr->lprio = getHighestPriorityFromWaitList(lptr);
                     // should we call resched?
 
                     // what to return??
                 }
 
             } else if (type == WRITE) { // The current proc is a writer and it cannot acquire the lock
-
+                
+                // Make writer wait
+                (pptr = &proctab[currpid])->pstate = PRWAIT;
                 insert(currpid, lptr->lqhead, lprio);
-                    // Make proc wait
+                // Do we need to do this as well as lwaitret??
+                pptr->pwaitret = OK;
+                pptr->plockdesc = ldesc;
+                pptr->waittime = ctr1000;
 
+                lptr->lwaitret = OK;
+
+                // check for this logic. Check for the argument
+                lptr->lprio = getHighestPriorityFromWaitList(lptr);
+                // should we call resched?
+
+                // what to return??
             }
         }
     }
@@ -120,9 +133,10 @@ int lock(int ldesc, int type, int lprio) {
 }
                 */ 
 
+int getHighestPriorityFromWaitList(struct pentry *lptr) {
 
-int checkForHigherWriterProc() {
-    
+    pid = q[lptr->qtail].qprev;
+    prio = proctab[pid].pinh == 0 ? proctab[pid].pprio : proctab[pid].pinh;
+    return prio;
+
 }
-
-int getHighestPriorityFromWaitList(lptr->head)
